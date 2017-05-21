@@ -15,6 +15,6 @@ public class LProtocolMessageHandler implements MessageHandler<String> {
     }
 
     public Message handle(String message) {
-        return new LProtocolParser(message).message();
+        return new LProtocolParser(message).parse();
     }
 }

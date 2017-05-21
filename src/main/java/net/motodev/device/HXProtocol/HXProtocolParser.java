@@ -16,7 +16,7 @@ public class HXProtocolParser implements Parser {
     }
 
     @Override
-    public HXProtocolMessage message() {
+    public HXProtocolMessage parse() {
         String message = getMessage();
         message = message.replace("!", "").replace("@", "");
         String[] splittedMsg = message.split(";");

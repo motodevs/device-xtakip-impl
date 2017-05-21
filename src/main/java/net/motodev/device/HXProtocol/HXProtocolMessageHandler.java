@@ -17,6 +17,6 @@ public class HXProtocolMessageHandler implements MessageHandler<String> {
 
     @Override
     public Message handle(String s) {
-        return new HXProtocolParser(s).message();
+        return new HXProtocolParser(s).parse();
     }
 }

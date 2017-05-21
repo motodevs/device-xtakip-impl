@@ -1,11 +1,6 @@
 package net.motodev.device.LProtocol;
 
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.MongoClient;
-import net.motodev.core.Callback;
 import net.motodev.core.Message;
-import net.motodev.core.utility.DateUtility;
 import net.motodev.device.DeviceConstants;
 import net.motodev.device.XTakip;
 
@@ -32,25 +27,6 @@ public class LProtocolMessage implements Message {
     private String additional;
     private String rawMessage;
     private String rawStatus;
-
-    @Override
-    public String subject() {
-        return DeviceConstants.PERIODIC_MESSAGE;
-    }
-
-    @Override
-    public void save(MongoClient mongoClient, String collection, Callback<Object> callback) {
-        JsonObject object = new JsonObject(Json.encode(this));
-        object.put("datetime", new JsonObject().put("$date", DateUtility.toISODateFormat(this.getDatetime())));
-        object.put("createdAt", new JsonObject().put("$date", DateUtility.toISODateFormat(new Date())));
-        object.put("messageType", "L");
-        object.put("deviceType", XTakip.NAME);
-        if (null == callback) {
-            mongoClient.save(collection, object, result -> mongoClient.close());
-        } else {
-            mongoClient.save(collection, object, result -> callback.call(result));
-        }
-    }
 
     @Override
     public String device() {
@@ -233,4 +209,28 @@ public class LProtocolMessage implements Message {
         return rawStatus;
     }
 
+    @Override
+    public boolean isCommand() {
+        return false;
+    }
+
+    @Override
+    public String type() {
+        return DeviceConstants.MESSAGE_TYPE_L;
+    }
+
+    @Override
+    public Date messageDate() {
+        return getDatetime();
+    }
+
+    @Override
+    public String requestId() {
+        return null;
+    }
+
+    @Override
+    public String[] extraParameters() {
+        return null;
+    }
 }

@@ -26,7 +26,7 @@ public class LProtocolParser implements Parser {
         return message;
     }
 
-    public LProtocolMessage message() {
+    public LProtocolMessage parse() {
         LProtocolMessage p = new LProtocolMessage();
         String message = getMessage();
 

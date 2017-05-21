@@ -5,8 +5,8 @@ package net.motodev.device;
  */
 public class DeviceConstants {
 
-    public static final String PERIODIC_MESSAGE = "LProtocolMessage";
-    public static final String XTAKIP_HX_MESSAGE = "HXProtocolMessage";
-    public static final String XTAKIP_OX_MESSAGE = "OXProtocolMessage";
+    public static final String MESSAGE_TYPE_L = "L";
+    public static final String MESSAGE_TYPE_HX = "HX";
+    public static final String MESSAGE_TYPE_OX = "OX";
 
 }

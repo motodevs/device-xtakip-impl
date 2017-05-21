@@ -18,20 +18,18 @@ public class XTakip implements Device {
 
     private final Vector<MessageHandler> messageHandlers = new Vector<>();
 
+    public XTakip() {
+        messageHandlers.add(new LProtocolMessageHandler());
+        messageHandlers.add(new HXProtocolMessageHandler());
+        messageHandlers.add(new OXProtocolMessageHandler());
+    }
+
     public String name() {
         return NAME;
     }
 
     public Vector<MessageHandler> handlers() {
-        messageHandlers.add(new LProtocolMessageHandler());
-        messageHandlers.add(new HXProtocolMessageHandler());
-        messageHandlers.add(new OXProtocolMessageHandler());
         return messageHandlers;
     }
 
-
-    @Override
-    public String periodicMessageSubject() {
-        return DeviceConstants.PERIODIC_MESSAGE;
-    }
 }

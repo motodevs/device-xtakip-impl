@@ -20,7 +20,7 @@ public class OXProtocolParser implements Parser {
     }
 
     @Override
-    public OXProtocolMessage message() {
+    public OXProtocolMessage parse() {
         OXProtocolMessage m = new OXProtocolMessage();
 
         String message = getMessage();

@@ -17,6 +17,6 @@ public class OXProtocolMessageHandler implements MessageHandler<String> {
 
     @Override
     public Message handle(String s) {
-        return new OXProtocolParser(s).message();
+        return new OXProtocolParser(s).parse();
     }
 }
