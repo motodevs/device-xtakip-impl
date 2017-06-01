@@ -1,4 +1,4 @@
-package net.motodev.device.LProtocol;
+package net.motodev.device.lprotocol;
 
 import net.motodev.core.Message;
 import net.motodev.core.MessageHandler;

@@ -1,4 +1,4 @@
-package net.motodev.device.HXProtocol;
+package net.motodev.device.oxprotocol;
 
 import net.motodev.core.Message;
 import net.motodev.device.DeviceConstants;
@@ -8,13 +8,25 @@ import java.util.Date;
 
 /**
  * Created by oksuz on 20/05/2017.
+ *
  */
-public class HXProtocolMessage implements Message {
+
+public class OXProtocolMessage implements Message {
 
     private String deviceId;
-    private Date datetime;
     private String requestId;
     private String[] params;
+    private Date datetime;
+
+    @Override
+    public String device() {
+        return XTakip.NAME;
+    }
+
+    @Override
+    public String deviceId() {
+        return this.deviceId;
+    }
 
     public void setDeviceId(String deviceId) {
         this.deviceId = deviceId;
@@ -28,16 +40,8 @@ public class HXProtocolMessage implements Message {
         this.params = params;
     }
 
-    public void setDatetime(Date datetime) {
-        this.datetime = datetime;
-    }
-
     public String getDeviceId() {
         return deviceId;
-    }
-
-    public Date getDatetime() {
-        return datetime;
     }
 
     public String getRequestId() {
@@ -48,14 +52,12 @@ public class HXProtocolMessage implements Message {
         return params;
     }
 
-    @Override
-    public String device() {
-        return XTakip.NAME;
+    public void setDatetime(Date datetime) {
+        this.datetime = datetime;
     }
 
-    @Override
-    public String deviceId() {
-        return this.deviceId;
+    public Date getDatetime() {
+        return datetime;
     }
 
     @Override
@@ -65,7 +67,7 @@ public class HXProtocolMessage implements Message {
 
     @Override
     public String type() {
-        return DeviceConstants.MESSAGE_TYPE_HX;
+        return DeviceConstants.MESSAGE_TYPE_OX;
     }
 
     @Override

@@ -2,9 +2,10 @@ package net.motodev.device;
 
 import net.motodev.core.Device;
 import net.motodev.core.MessageHandler;
-import net.motodev.device.HXProtocol.HXProtocolMessageHandler;
-import net.motodev.device.LProtocol.LProtocolMessageHandler;
-import net.motodev.device.OXProtocol.OXProtocolMessageHandler;
+import net.motodev.core.ResponseAdapter;
+import net.motodev.device.hxprotocol.HXProtocolMessageHandler;
+import net.motodev.device.lprotocol.LProtocolMessageHandler;
+import net.motodev.device.oxprotocol.OXProtocolMessageHandler;
 
 import java.util.Vector;
 
@@ -30,6 +31,11 @@ public class XTakip implements Device {
 
     public Vector<MessageHandler> handlers() {
         return messageHandlers;
+    }
+
+    @Override
+    public ResponseAdapter messageResponseAdapter() {
+        return null;
     }
 
 }

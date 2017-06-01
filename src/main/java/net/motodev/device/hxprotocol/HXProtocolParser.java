@@ -1,4 +1,4 @@
-package net.motodev.device.HXProtocol;
+package net.motodev.device.hxprotocol;
 
 import net.motodev.core.Parser;
 

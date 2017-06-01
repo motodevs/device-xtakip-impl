@@ -1,4 +1,4 @@
-package net.motodev.device.OXProtocol;
+package net.motodev.device.oxprotocol;
 
 import net.motodev.core.Parser;
 
