@@ -1,6 +1,7 @@
 package net.motodev.device.hxprotocol;
 
-import net.motodev.core.Parser;
+
+import net.motodev.core.message.Parser;
 
 import java.util.Date;
 

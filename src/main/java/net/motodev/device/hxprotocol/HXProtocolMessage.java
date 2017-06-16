@@ -1,6 +1,7 @@
 package net.motodev.device.hxprotocol;
 
-import net.motodev.core.Message;
+
+import net.motodev.core.message.Message;
 import net.motodev.device.DeviceConstants;
 import net.motodev.device.XTakip;
 

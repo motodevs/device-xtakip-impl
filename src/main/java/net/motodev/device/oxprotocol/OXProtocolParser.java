@@ -1,6 +1,6 @@
 package net.motodev.device.oxprotocol;
 
-import net.motodev.core.Parser;
+import net.motodev.core.message.Parser;
 
 import java.util.Date;
 

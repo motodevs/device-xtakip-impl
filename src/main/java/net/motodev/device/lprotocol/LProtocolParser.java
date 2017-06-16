@@ -1,7 +1,10 @@
 package net.motodev.device.lprotocol;
 
-import net.motodev.core.Parser;
+
+import net.motodev.core.GpsStatus;
+import net.motodev.core.message.Parser;
 import net.motodev.device.ConversionHelper;
+import net.motodev.device.XTakipStatus;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -41,7 +44,16 @@ public class LProtocolParser implements Parser {
         String dateTime = message.substring(0, 12);
         message = message.substring(12);
 
-        int gpsStatus = Integer.parseInt(message.substring(0, 1));
+        int deviceGpsStatus = Integer.parseInt(message.substring(0, 1));
+        GpsStatus gpsStatus;
+        if (deviceGpsStatus <= 3) {
+            gpsStatus = GpsStatus.VALID;
+        } else if (deviceGpsStatus == 8) {
+            gpsStatus = GpsStatus.NO_DATA;
+        } else {
+            gpsStatus = GpsStatus.INVALID;
+        }
+
         message = message.substring(1);
 
         double latitude = ConversionHelper.convertLatitude(message.substring(0, 8));
@@ -50,7 +62,7 @@ public class LProtocolParser implements Parser {
         double longitude = ConversionHelper.convertLongitude(message.substring(0, 9));
         message = message.substring(9);
 
-        String status = message.substring(0, 8);
+        XTakipStatus status = parseStatus(message.substring(0, 8));
         message = message.substring(8);
 
         double speed = ConversionHelper.knotToKm(message.substring(0, 4));
@@ -87,4 +99,87 @@ public class LProtocolParser implements Parser {
 
         return p;
     }
+
+    private XTakipStatus parseStatus(String raw) {
+        XTakipStatus status = new XTakipStatus();
+        status.setRaw(raw);
+        int convertedStatus = Integer.parseInt(raw);
+        String bits = Integer.toString(convertedStatus, 2);
+        bits = new StringBuilder(bits).reverse().toString();
+        byte[] bytes = bits.getBytes();
+        byte t = 49; // 1
+
+        for (int i = 0; i < bytes.length; i++) {
+            switch (i) {
+                case 0:
+                    status.setInput1Active(bytes[i] == t);
+                    break;
+                case 1:
+                    status.setInput2Active(bytes[i] == t);
+                    break;
+                case 2:
+                    status.setInput3Active(bytes[i] == t);
+                    break;
+                case 3:
+                    status.setIgnitiKeyOff(bytes[i] == t);
+                    break;
+                case 4:
+                    status.setBatteryCutted(bytes[i] == t);
+                    break;
+                case 5:
+                    status.setOutput1Active(bytes[i] == t);
+                    break;
+                case 6:
+                    status.setOutput2Active(bytes[i] == t);
+                    break;
+                case 7:
+                    status.setOutput3Active(bytes[i] == t);
+                    break;
+                case 8:
+                    status.setOutOfTempLimit(bytes[i] == t);
+                    break;
+                case 9:
+                    status.setOutOfSpeedLimit(bytes[i] == t);
+                    break;
+                case 10:
+                    status.setGprsOpendOnOversea(bytes[i] == t);
+                    break;
+                case 11:
+                    status.setDeltaDistinaceOpened(bytes[i] == t);
+                    break;
+                case 12:
+                    status.setOfflineRecord(bytes[i] == t);
+                    break;
+                case 13:
+                    status.setInvalidRTC(bytes[i] == t);
+                    break;
+                case 14:
+                    status.setEngineStopActive(bytes[i] == t);
+                    break;
+                case 15:
+                    status.setMaxStopResuming(bytes[i] == t);
+                    break;
+                case 16:
+                    status.setIdleStatusResuming(bytes[i] == t);
+                    break;
+                case 17:
+                    status.setgSensorAlarmResuming(bytes[i] == t);
+                    break;
+                case 18:
+                    status.setInput4Active(bytes[i] == t);
+                    break;
+                case 19:
+                    status.setInput5Active(bytes[i] == t);
+                    break;
+                case 20:
+                    status.setExternalPowerCut(bytes[i] == t);
+                    break;
+
+            }
+        }
+
+
+        return status;
+    }
+
 }
