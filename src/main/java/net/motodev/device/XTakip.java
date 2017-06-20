@@ -1,23 +1,29 @@
 package net.motodev.device;
 
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 import net.motodev.core.Device;
+import net.motodev.core.DeviceStatus;
 import net.motodev.core.adapter.ResponseAdapter;
 import net.motodev.core.alarm.Alarm;
 import net.motodev.core.alarm.AlarmAction;
-import net.motodev.core.db.DeviceQueryExecutor;
+import net.motodev.core.db.DeviceQueryHelper;
 import net.motodev.core.message.Message;
 import net.motodev.core.message.MessageHandler;
+import net.motodev.core.utility.DateUtility;
 import net.motodev.device.adapter.MessageResponseAdapter;
 import net.motodev.device.hxprotocol.HXProtocolMessageHandler;
 import net.motodev.device.lprotocol.LProtocolMessage;
 import net.motodev.device.lprotocol.LProtocolMessageHandler;
 import net.motodev.device.oxprotocol.OXProtocolMessageHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.*;
+import java.util.concurrent.*;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 
 /**
  * Created by oksuz on 19/05/2017.
@@ -25,9 +31,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class XTakip implements Device {
 
     public static final String NAME = "xtakip";
+    private static final Logger LOGGER = LoggerFactory.getLogger(XTakip.class);
 
     private final CopyOnWriteArrayList<MessageHandler> messageHandlers = new CopyOnWriteArrayList<>();
     private final ConcurrentHashMap<Integer, XtakipAlarm> alarms = new ConcurrentHashMap<>();
+    private final long FIVE_MIN_IN_MILIS = MILLISECONDS.convert(5, MINUTES);
+    private ScheduledExecutorService metaUpdater = null;
 
     public XTakip() {
         messageHandlers.add(new LProtocolMessageHandler());
@@ -50,7 +59,7 @@ public class XTakip implements Device {
     }
 
     @Override
-    public void createAlarmIfRequired(Message message, DeviceQueryExecutor deviceQueryExecutor, Handler<Alarm> handler) {
+    public void createAlarmIfRequired(Message message, DeviceQueryHelper deviceQueryHelper, Handler<Alarm> handler) {
         if (!(message instanceof LProtocolMessage)) {
             return;
         }
@@ -58,22 +67,134 @@ public class XTakip implements Device {
         LProtocolMessage lProtocolMessage = (LProtocolMessage) message;
         if (alarms.containsKey(lProtocolMessage.getAlarm())) {
             XtakipAlarm alarm = alarms.get(lProtocolMessage.getAlarm());
-            handler.handle(new Alarm(lProtocolMessage.getDeviceId(), alarm.getDescription(), alarm.getActions(), lProtocolMessage.getDatetime()));
+
+            HashMap<Object, Object> extra = new HashMap<>();
+            extra.put("xTakipAlarmId", lProtocolMessage.getAlarm());
+            extra.put("distance", lProtocolMessage.getDistance());
+
+            Alarm deviceAlarm = new Alarm(lProtocolMessage.getDeviceId(), alarm.getDescription(), alarm.getActions(), lProtocolMessage.getDatetime(), extra);
+
+            LOGGER.info("Device alarm created {}, {}", deviceAlarm.description(), deviceAlarm.extraData());
+            handler.handle(deviceAlarm);
+            return;
         }
 
+        deviceQueryHelper.readMeta(listMeta -> {
+            if (listMeta == null || ((List) listMeta).size() == 0) {
+                LOGGER.info("device status unknown");
+                return;
+            }
 
+            JsonObject meta = (JsonObject) ((List) listMeta).get(0);
+            DeviceStatus status;
+            try {
+                status = DeviceStatus.valueOf(meta.getString("status"));
+            } catch (Exception e) {
+                LOGGER.error("device status not found in meta", e);
+                return;
+            }
+
+
+            if (status == DeviceStatus.CONNECTION_LOST || status == DeviceStatus.PARKED &&
+                    (lProtocolMessage.getStatus().getIgnitiKeyOff() == null || lProtocolMessage.getStatus().getIgnitiKeyOff())
+             ) {
+                deviceQueryHelper.readAlarms(alarms -> {
+                    if (alarms.size() == 0) {
+                        LOGGER.info("[custom-alarm-creation] alarm size is zero");
+                        return;
+                    }
+
+                    HashMap<Object, Object> extra = new HashMap<>();
+                    extra.put("xTakipAlarmId", DeviceConstants.ALARM_MOVING_ID);
+                    extra.put("distance", lProtocolMessage.getDistance());
+                    Alarm alarm = alarms.get(0);
+
+                    if (new Date().getTime() - alarm.date().getTime() > FIVE_MIN_IN_MILIS) {
+                        Alarm customAlarm = new Alarm(lProtocolMessage.getDeviceId(), DeviceConstants.ALARM_MOVING_DESCRIPTION, DeviceConstants.CRITICAL_ALARM_ACTION, lProtocolMessage.getDatetime(), extra);
+                        LOGGER.info("Custom alarm created {}, {}", customAlarm.description(), customAlarm.extraData());
+                        handler.handle(customAlarm);
+                    }
+
+                }, 1);
+            }
+
+        });
     }
 
     @Override
-    public void updateMeta(Message message, DeviceQueryExecutor deviceQueryExecutor) {
+    public void updateMeta(Message message, DeviceQueryHelper deviceQueryHelper) {
         if (!(message instanceof LProtocolMessage)) {
             return;
         }
 
+        LOGGER.info("updating device meta");
         LProtocolMessage lProtocolMessage = (LProtocolMessage) message;
 
+        JsonObject newMeta = new JsonObject()
+                .put("deviceId",lProtocolMessage.deviceId())
+                .put("distance", lProtocolMessage.getDistance())
+                .put("speed", lProtocolMessage.getSpeed())
+                .put("gpsStatus", lProtocolMessage.getGpsStatus())
+                .put("createdAt", DateUtility.toISODateFormat(new Date()))
+                .put("updatedAt", DateUtility.toISODateFormat(new Date()))
+                .put("deviceDate", DateUtility.toISODateFormat(lProtocolMessage.getDatetime()))
+                ;
+
+
+        if (lProtocolMessage.getStatus().getInvalidRTC() != null) {
+            newMeta.put("invalidDeviceDate", lProtocolMessage.getStatus().getInvalidRTC());
+        }
+
+        if (lProtocolMessage.getStatus().getIgnitiKeyOff() != null) {
+            newMeta.put("ignitionKeyOff", lProtocolMessage.getStatus().getIgnitiKeyOff());
+        }
+
+        if (lProtocolMessage.getAlarm() == 13 ||
+                (lProtocolMessage.getStatus().getIgnitiKeyOff() != null && lProtocolMessage.getStatus().getIgnitiKeyOff())) {
+            newMeta.put("status", DeviceStatus.PARKED);
+        }
+
+        if (lProtocolMessage.getAlarm() == 12 ||
+                (lProtocolMessage.getStatus().getIgnitiKeyOff() != null && !lProtocolMessage.getStatus().getIgnitiKeyOff())) {
+            newMeta.put("status", DeviceStatus.MOVING);
+        }
+
+        if (metaUpdater == null) {
+            metaUpdater = Executors.newSingleThreadScheduledExecutor();
+            metaUpdater.scheduleAtFixedRate(getLostConnectionDetector(deviceQueryHelper), 0, 3, TimeUnit.MINUTES);
+        }
+
+        LOGGER.info("device meta created {}", newMeta);
+        if (newMeta.containsKey("status")) {
+            deviceQueryHelper.upsertMeta(newMeta, new JsonObject());
+            LOGGER.info("device meta upserted");
+        }
     }
 
+    private Runnable getLostConnectionDetector(DeviceQueryHelper deviceQueryHelper) {
+        LOGGER.info("lost connection detector initialized");
+        return () -> deviceQueryHelper.readMeta(listMeta -> {
+            try {
+                LOGGER.info("Checking device connection status");
+                if (listMeta == null || ((List) listMeta).size() == 0) {
+                    LOGGER.info("[lost-connection-detector] device meta empty");
+                    return;
+                }
+
+                JsonObject meta = (JsonObject) ((List) listMeta).get(0);
+                Date updatedAt = DateUtility.fromISODateFormat(meta.getString("updatedAt"));
+                LOGGER.info("[lost-connection-detector] trying to update device meta");
+                if (new Date().getTime() - updatedAt.getTime() > FIVE_MIN_IN_MILIS && DeviceStatus.valueOf(meta.getString("status")) == DeviceStatus.MOVING) {
+                    meta.put("status", DeviceStatus.CONNECTION_LOST);
+                    meta.put("updatedAt", DateUtility.toISODateFormat(new Date()));
+                    deviceQueryHelper.upsertMeta(meta, new JsonObject());
+                    LOGGER.info("[lost-connection-detector] updated device meta {}", meta);
+                }
+            } catch (Exception e) {
+                LOGGER.error("device meta updater exception ", e);
+            }
+        });
+    }
 
     private void initializeAlarmMap() {
         alarms.put(1, new XtakipAlarm(1, "Noktaya giriş/çıkış yapıldı", Arrays.asList(AlarmAction.INFO)));
