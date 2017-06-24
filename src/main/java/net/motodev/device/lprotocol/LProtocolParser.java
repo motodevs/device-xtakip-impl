@@ -92,9 +92,9 @@ public class LProtocolParser implements Parser {
         p.setDirection(direction);
         p.setAdditional(additional);
         try {
-            p.setDatetime(format.parse(dateTime));
+            p.setDatetime(format.parse(dateTime).getTime());
         } catch (ParseException e) {
-            p.setDatetime(new Date());
+            p.setDatetime(new Date().getTime());
         }
 
         return p;

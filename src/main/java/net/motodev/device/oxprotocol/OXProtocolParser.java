@@ -9,7 +9,7 @@ import java.util.Date;
  */
 public class OXProtocolParser implements Parser {
 
-    String message;
+    private String message;
 
     public OXProtocolParser(String s) {
         message = s;
@@ -31,7 +31,7 @@ public class OXProtocolParser implements Parser {
         m.setDeviceId(splittedMsg[1]);
         m.setRequestId(splittedMsg[5]);
         m.setParams(new String[]{splittedMsg[2], splittedMsg[3], splittedMsg[4]});
-        m.setDatetime(new Date());
+        m.setDatetime(new Date().getTime());
 
         return m;
     }

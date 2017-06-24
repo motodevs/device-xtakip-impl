@@ -26,7 +26,7 @@ public class HXProtocolParser implements Parser {
         m.setDeviceId(splittedMsg[1]);
         m.setRequestId(splittedMsg[6]);
         m.setParams(new String[]{splittedMsg[2], splittedMsg[3], splittedMsg[4], splittedMsg[5]});
-        m.setDatetime(new Date());
+        m.setDatetime(new Date().getTime());
 
         return m;
     }

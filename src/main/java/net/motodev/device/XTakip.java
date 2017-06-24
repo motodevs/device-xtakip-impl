@@ -4,6 +4,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import net.motodev.core.Device;
 import net.motodev.core.DeviceStatus;
+import net.motodev.core.GpsStatus;
 import net.motodev.core.adapter.ResponseAdapter;
 import net.motodev.core.alarm.Alarm;
 import net.motodev.core.alarm.AlarmAction;
@@ -59,7 +60,7 @@ public class XTakip implements Device {
     }
 
     @Override
-    public void createAlarmIfRequired(Message message, DeviceQueryHelper deviceQueryHelper, Handler<Alarm> handler) {
+    public void createAlarmIfRequired(Message message, DeviceQueryHelper deviceQueryHelper, Handler<Alarm> alarmHandler) {
         if (!(message instanceof LProtocolMessage)) {
             return;
         }
@@ -75,50 +76,13 @@ public class XTakip implements Device {
             Alarm deviceAlarm = new Alarm(lProtocolMessage.getDeviceId(), alarm.getDescription(), alarm.getActions(), lProtocolMessage.getDatetime(), extra);
 
             LOGGER.info("Device alarm created {}, {}", deviceAlarm.description(), deviceAlarm.extraData());
-            handler.handle(deviceAlarm);
+            alarmHandler.handle(deviceAlarm);
             return;
         }
 
-        deviceQueryHelper.readMeta(listMeta -> {
-            if (listMeta == null || ((List) listMeta).size() == 0) {
-                LOGGER.info("device status unknown");
-                return;
-            }
 
-            JsonObject meta = (JsonObject) ((List) listMeta).get(0);
-            DeviceStatus status;
-            try {
-                status = DeviceStatus.valueOf(meta.getString("status"));
-            } catch (Exception e) {
-                LOGGER.error("device status not found in meta", e);
-                return;
-            }
-
-
-            if (status == DeviceStatus.CONNECTION_LOST || status == DeviceStatus.PARKED &&
-                    (lProtocolMessage.getStatus().getIgnitiKeyOff() == null || lProtocolMessage.getStatus().getIgnitiKeyOff())
-             ) {
-                deviceQueryHelper.readAlarms(alarms -> {
-                    if (alarms.size() == 0) {
-                        LOGGER.info("[custom-alarm-creation] alarm size is zero");
-                        return;
-                    }
-
-                    HashMap<Object, Object> extra = new HashMap<>();
-                    extra.put("xTakipAlarmId", DeviceConstants.ALARM_MOVING_ID);
-                    extra.put("distance", lProtocolMessage.getDistance());
-                    Alarm alarm = alarms.get(0);
-
-                    if (new Date().getTime() - alarm.date().getTime() > FIVE_MIN_IN_MILIS) {
-                        Alarm customAlarm = new Alarm(lProtocolMessage.getDeviceId(), DeviceConstants.ALARM_MOVING_DESCRIPTION, DeviceConstants.CRITICAL_ALARM_ACTION, lProtocolMessage.getDatetime(), extra);
-                        LOGGER.info("Custom alarm created {}, {}", customAlarm.description(), customAlarm.extraData());
-                        handler.handle(customAlarm);
-                    }
-
-                }, 1);
-            }
-
-        });
+        MovingAlarmGenerator movingAlarmGenerator = new MovingAlarmGenerator(lProtocolMessage, deviceQueryHelper, alarmHandler);
+        movingAlarmGenerator.create();
     }
 
     @Override
@@ -135,9 +99,9 @@ public class XTakip implements Device {
                 .put("distance", lProtocolMessage.getDistance())
                 .put("speed", lProtocolMessage.getSpeed())
                 .put("gpsStatus", lProtocolMessage.getGpsStatus())
-                .put("createdAt", DateUtility.toISODateFormat(new Date()))
-                .put("updatedAt", DateUtility.toISODateFormat(new Date()))
-                .put("deviceDate", DateUtility.toISODateFormat(lProtocolMessage.getDatetime()))
+                .put("createdAt", new Date().getTime())
+                .put("updatedAt", new Date().getTime())
+                .put("deviceDate", lProtocolMessage.datetime())
                 ;
 
 
@@ -159,7 +123,12 @@ public class XTakip implements Device {
             newMeta.put("status", DeviceStatus.MOVING);
         }
 
-        if (metaUpdater == null) {
+        if (lProtocolMessage.getGpsStatus() != GpsStatus.NO_DATA) {
+            newMeta.put("latitude", lProtocolMessage.getLatitude());
+            newMeta.put("longitude", lProtocolMessage.getLongitude());
+        }
+
+        if (metaUpdater == null || metaUpdater.isShutdown()) {
             metaUpdater = Executors.newSingleThreadScheduledExecutor();
             metaUpdater.scheduleAtFixedRate(getLostConnectionDetector(deviceQueryHelper), 0, 3, TimeUnit.MINUTES);
         }
@@ -181,14 +150,16 @@ public class XTakip implements Device {
                     return;
                 }
 
+                Date date = new Date();
                 JsonObject meta = (JsonObject) ((List) listMeta).get(0);
-                Date updatedAt = DateUtility.fromISODateFormat(meta.getString("updatedAt"));
+                long updatedAt = meta.getLong("updatedAt");
                 LOGGER.info("[lost-connection-detector] trying to update device meta");
-                if (new Date().getTime() - updatedAt.getTime() > FIVE_MIN_IN_MILIS && DeviceStatus.valueOf(meta.getString("status")) == DeviceStatus.MOVING) {
+                if (date.getTime() - updatedAt > FIVE_MIN_IN_MILIS && DeviceStatus.valueOf(meta.getString("status")) == DeviceStatus.MOVING) {
                     meta.put("status", DeviceStatus.CONNECTION_LOST);
-                    meta.put("updatedAt", DateUtility.toISODateFormat(new Date()));
+                    meta.put("updatedAt", date.getTime());
                     deviceQueryHelper.upsertMeta(meta, new JsonObject());
                     LOGGER.info("[lost-connection-detector] updated device meta {}", meta);
+                    metaUpdater.shutdownNow();
                 }
             } catch (Exception e) {
                 LOGGER.error("device meta updater exception ", e);

@@ -5,8 +5,6 @@ import net.motodev.core.message.Message;
 import net.motodev.device.DeviceConstants;
 import net.motodev.device.XTakip;
 
-import java.util.Date;
-
 /**
  * Created by oksuz on 20/05/2017.
  *
@@ -17,7 +15,7 @@ public class OXProtocolMessage implements Message {
     private String deviceId;
     private String requestId;
     private String[] params;
-    private Date datetime;
+    private long datetime;
 
     @Override
     public String device() {
@@ -27,6 +25,31 @@ public class OXProtocolMessage implements Message {
     @Override
     public String deviceId() {
         return this.deviceId;
+    }
+
+    @Override
+    public boolean isCommand() {
+        return true;
+    }
+
+    @Override
+    public String type() {
+        return DeviceConstants.MESSAGE_TYPE_OX;
+    }
+
+    @Override
+    public long datetime() {
+        return getDatetime();
+    }
+
+    @Override
+    public String requestId() {
+        return getRequestId();
+    }
+
+    @Override
+    public String[] extraParameters() {
+        return getParams();
     }
 
     public void setDeviceId(String deviceId) {
@@ -53,36 +76,11 @@ public class OXProtocolMessage implements Message {
         return params;
     }
 
-    public void setDatetime(Date datetime) {
+    public void setDatetime(long datetime) {
         this.datetime = datetime;
     }
 
-    public Date getDatetime() {
+    public long getDatetime() {
         return datetime;
-    }
-
-    @Override
-    public boolean isCommand() {
-        return true;
-    }
-
-    @Override
-    public String type() {
-        return DeviceConstants.MESSAGE_TYPE_OX;
-    }
-
-    @Override
-    public Date messageDate() {
-        return new Date();
-    }
-
-    @Override
-    public String requestId() {
-        return getRequestId();
-    }
-
-    @Override
-    public String[] extraParameters() {
-        return getParams();
     }
 }

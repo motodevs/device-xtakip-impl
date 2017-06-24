@@ -5,49 +5,15 @@ import net.motodev.core.message.Message;
 import net.motodev.device.DeviceConstants;
 import net.motodev.device.XTakip;
 
-import java.util.Date;
-
 /**
  * Created by oksuz on 20/05/2017.
  */
 public class HXProtocolMessage implements Message {
 
     private String deviceId;
-    private Date datetime;
+    private long datetime;
     private String requestId;
     private String[] params;
-
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
-    }
-
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
-    }
-
-    public void setParams(String[] params) {
-        this.params = params;
-    }
-
-    public void setDatetime(Date datetime) {
-        this.datetime = datetime;
-    }
-
-    public String getDeviceId() {
-        return deviceId;
-    }
-
-    public Date getDatetime() {
-        return datetime;
-    }
-
-    public String getRequestId() {
-        return requestId;
-    }
-
-    public String[] getParams() {
-        return params;
-    }
 
     @Override
     public String device() {
@@ -56,7 +22,7 @@ public class HXProtocolMessage implements Message {
 
     @Override
     public String deviceId() {
-        return this.deviceId;
+        return getDeviceId();
     }
 
     @Override
@@ -70,8 +36,8 @@ public class HXProtocolMessage implements Message {
     }
 
     @Override
-    public Date messageDate() {
-        return new Date();
+    public long datetime() {
+        return getDatetime();
     }
 
     @Override
@@ -83,4 +49,38 @@ public class HXProtocolMessage implements Message {
     public String[] extraParameters() {
         return getParams();
     }
+
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
+    public void setParams(String[] params) {
+        this.params = params;
+    }
+
+    public void setDatetime(long datetime) {
+        this.datetime = datetime;
+    }
+
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    public long getDatetime() {
+        return datetime;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public String[] getParams() {
+        return params;
+    }
+
 }

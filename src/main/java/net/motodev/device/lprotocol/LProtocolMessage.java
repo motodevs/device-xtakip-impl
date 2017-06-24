@@ -7,16 +7,14 @@ import net.motodev.device.DeviceConstants;
 import net.motodev.device.XTakip;
 import net.motodev.device.XTakipStatus;
 
-import java.util.Date;
-
 /**
  * Created by oksuz on 19/05/2017.
  */
 public class LProtocolMessage implements Message {
 
-    private transient String header;
+    private String header;
     private String deviceId;
-    private Date datetime;
+    private long datetime;
     private GpsStatus gpsStatus;
     private double latitude;
     private double longitude;
@@ -49,7 +47,7 @@ public class LProtocolMessage implements Message {
     }
 
     @Override
-    public Date messageDate() {
+    public long datetime() {
         return getDatetime();
     }
 
@@ -71,7 +69,7 @@ public class LProtocolMessage implements Message {
         this.deviceId = deviceId;
     }
 
-    public void setDatetime(Date datetime) {
+    public void setDatetime(long datetime) {
         this.datetime = datetime;
     }
 
@@ -119,7 +117,7 @@ public class LProtocolMessage implements Message {
         return deviceId;
     }
 
-    public Date getDatetime() {
+    public long getDatetime() {
         return datetime;
     }
 
