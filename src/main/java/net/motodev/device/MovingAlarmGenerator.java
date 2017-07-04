@@ -81,12 +81,15 @@ public class MovingAlarmGenerator {
             Alarm lastAlarm = alarms.get(0);
             HashMap<Object, Object> extra = lastAlarm.extraData();
 
-            if (new Date().getTime() - lastAlarm.datetime() > FIVE_MIN_IN_MILIS && extra.containsKey("xTakipAlarmId") && (int)extra.get("xTakipAlarmId") != DeviceConstants.ALARM_MOVING_ID) {
+            double xtakipAlarmId = (double)extra.get("xTakipAlarmId");
+            double alarmMovingId = (double) DeviceConstants.ALARM_MOVING_ID;
+
+            if (new Date().getTime() - lastAlarm.datetime() > FIVE_MIN_IN_MILIS && extra.containsKey("xTakipAlarmId") && xtakipAlarmId != alarmMovingId) {
                 alarmHandler.handle(getMovingAlarm(message));
                 return;
             }
 
-            if (extra.containsKey("xTakipAlarmId") && (int)extra.get("xTakipAlarmId") != DeviceConstants.ALARM_MOVING_ID && message.getDistance() - (double)extra.get("distance") > 1) {
+            if (extra.containsKey("xTakipAlarmId") && xtakipAlarmId != alarmMovingId && message.getDistance() - (double)extra.get("distance") > 1) {
                 alarmHandler.handle(getMovingAlarm(message));
             }
 

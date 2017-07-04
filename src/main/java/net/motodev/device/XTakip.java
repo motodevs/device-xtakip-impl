@@ -11,7 +11,6 @@ import net.motodev.core.alarm.AlarmAction;
 import net.motodev.core.db.DeviceQueryHelper;
 import net.motodev.core.message.Message;
 import net.motodev.core.message.MessageHandler;
-import net.motodev.core.utility.DateUtility;
 import net.motodev.device.adapter.MessageResponseAdapter;
 import net.motodev.device.hxprotocol.HXProtocolMessageHandler;
 import net.motodev.device.lprotocol.LProtocolMessage;
@@ -20,11 +19,11 @@ import net.motodev.device.oxprotocol.OXProtocolMessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.concurrent.*;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.MINUTES;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Created by oksuz on 19/05/2017.
@@ -36,8 +35,6 @@ public class XTakip implements Device {
 
     private final CopyOnWriteArrayList<MessageHandler> messageHandlers = new CopyOnWriteArrayList<>();
     private final ConcurrentHashMap<Integer, XtakipAlarm> alarms = new ConcurrentHashMap<>();
-    private final long FIVE_MIN_IN_MILIS = MILLISECONDS.convert(5, MINUTES);
-    private ScheduledExecutorService metaUpdater = null;
 
     public XTakip() {
         messageHandlers.add(new LProtocolMessageHandler());
@@ -128,11 +125,6 @@ public class XTakip implements Device {
             newMeta.put("longitude", lProtocolMessage.getLongitude());
         }
 
-        if (metaUpdater == null || metaUpdater.isShutdown()) {
-            metaUpdater = Executors.newSingleThreadScheduledExecutor();
-            metaUpdater.scheduleAtFixedRate(getLostConnectionDetector(deviceQueryHelper), 0, 3, TimeUnit.MINUTES);
-        }
-
         LOGGER.info("device meta created {}", newMeta);
         if (newMeta.containsKey("status")) {
             deviceQueryHelper.upsertMeta(newMeta, new JsonObject());
@@ -140,32 +132,6 @@ public class XTakip implements Device {
         }
     }
 
-    private Runnable getLostConnectionDetector(DeviceQueryHelper deviceQueryHelper) {
-        LOGGER.info("lost connection detector initialized");
-        return () -> deviceQueryHelper.readMeta(listMeta -> {
-            try {
-                LOGGER.info("Checking device connection status");
-                if (listMeta == null || ((List) listMeta).size() == 0) {
-                    LOGGER.info("[lost-connection-detector] device meta empty");
-                    return;
-                }
-
-                Date date = new Date();
-                JsonObject meta = (JsonObject) ((List) listMeta).get(0);
-                long updatedAt = meta.getLong("updatedAt");
-                LOGGER.info("[lost-connection-detector] trying to update device meta");
-                if (date.getTime() - updatedAt > FIVE_MIN_IN_MILIS && DeviceStatus.valueOf(meta.getString("status")) == DeviceStatus.MOVING) {
-                    meta.put("status", DeviceStatus.CONNECTION_LOST);
-                    meta.put("updatedAt", date.getTime());
-                    deviceQueryHelper.upsertMeta(meta, new JsonObject());
-                    LOGGER.info("[lost-connection-detector] updated device meta {}", meta);
-                    metaUpdater.shutdownNow();
-                }
-            } catch (Exception e) {
-                LOGGER.error("device meta updater exception ", e);
-            }
-        });
-    }
 
     private void initializeAlarmMap() {
         alarms.put(1, new XtakipAlarm(1, "Noktaya giriş/çıkış yapıldı", Arrays.asList(AlarmAction.INFO)));
