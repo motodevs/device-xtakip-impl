@@ -1,11 +1,11 @@
-package net.motodev.device.lprotocol;
+package com.openmts.device.xtakip.lprotocol;
 
 
-import net.motodev.core.GpsStatus;
-import net.motodev.core.message.Message;
-import net.motodev.device.DeviceConstants;
-import net.motodev.device.XTakip;
-import net.motodev.device.XTakipStatus;
+import com.openmts.core.GpsStatus;
+import com.openmts.core.message.Message;
+import com.openmts.device.xtakip.DeviceConstants;
+import com.openmts.device.xtakip.XTakip;
+import com.openmts.device.xtakip.XTakipStatus;
 
 /**
  * Created by oksuz on 19/05/2017.

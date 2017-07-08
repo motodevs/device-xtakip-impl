@@ -1,7 +1,7 @@
-package net.motodev.device.oxprotocol;
+package com.openmts.device.xtakip.oxprotocol;
 
-import net.motodev.core.message.Message;
-import net.motodev.core.message.MessageHandler;
+import com.openmts.core.message.Message;
+import com.openmts.core.message.MessageHandler;
 
 import java.util.regex.Pattern;
 

@@ -1,7 +1,7 @@
-package net.motodev.device.adapter;
+package com.openmts.device.xtakip.adapter;
 
+import com.openmts.core.adapter.ResponseAdapter;
 import io.vertx.core.json.JsonObject;
-import net.motodev.core.adapter.ResponseAdapter;
 
 import java.util.List;
 

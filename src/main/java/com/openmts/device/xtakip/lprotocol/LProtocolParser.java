@@ -1,10 +1,10 @@
-package net.motodev.device.lprotocol;
+package com.openmts.device.xtakip.lprotocol;
 
 
-import net.motodev.core.GpsStatus;
-import net.motodev.core.message.Parser;
-import net.motodev.device.ConversionHelper;
-import net.motodev.device.XTakipStatus;
+import com.openmts.core.GpsStatus;
+import com.openmts.core.message.Parser;
+import com.openmts.device.xtakip.ConversionHelper;
+import com.openmts.device.xtakip.XTakipStatus;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

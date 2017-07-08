@@ -1,4 +1,4 @@
-package net.motodev.device;
+package com.openmts.device.xtakip;
 
 /**
  * Created by oksuz on 04/02/2017.

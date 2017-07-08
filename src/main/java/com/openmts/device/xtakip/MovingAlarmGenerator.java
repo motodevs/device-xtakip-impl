@@ -1,12 +1,12 @@
-package net.motodev.device;
+package com.openmts.device.xtakip;
 
 
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
-import net.motodev.core.DeviceStatus;
-import net.motodev.core.alarm.Alarm;
-import net.motodev.core.db.DeviceQueryHelper;
-import net.motodev.device.lprotocol.LProtocolMessage;
+import com.openmts.core.DeviceStatus;
+import com.openmts.core.alarm.Alarm;
+import com.openmts.core.db.DeviceQueryHelper;
+import com.openmts.device.xtakip.lprotocol.LProtocolMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

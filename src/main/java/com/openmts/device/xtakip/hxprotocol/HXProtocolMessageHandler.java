@@ -1,8 +1,8 @@
-package net.motodev.device.hxprotocol;
+package com.openmts.device.xtakip.hxprotocol;
 
 
-import net.motodev.core.message.Message;
-import net.motodev.core.message.MessageHandler;
+import com.openmts.core.message.Message;
+import com.openmts.core.message.MessageHandler;
 
 import java.util.regex.Pattern;
 

@@ -1,6 +1,6 @@
-package net.motodev.device;
+package com.openmts.device.xtakip;
 
-import net.motodev.core.alarm.AlarmAction;
+import com.openmts.core.alarm.AlarmAction;
 
 import java.util.List;
 

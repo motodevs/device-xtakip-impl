@@ -1,4 +1,4 @@
-package net.motodev.device;
+package com.openmts.device.xtakip;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

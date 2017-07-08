@@ -1,21 +1,19 @@
-package net.motodev.device.oxprotocol;
+package com.openmts.device.xtakip.hxprotocol;
 
 
-import net.motodev.core.message.Message;
-import net.motodev.device.DeviceConstants;
-import net.motodev.device.XTakip;
+import com.openmts.core.message.Message;
+import com.openmts.device.xtakip.DeviceConstants;
+import com.openmts.device.xtakip.XTakip;
 
 /**
  * Created by oksuz on 20/05/2017.
- *
  */
-
-public class OXProtocolMessage implements Message {
+public class HXProtocolMessage implements Message {
 
     private String deviceId;
+    private long datetime;
     private String requestId;
     private String[] params;
-    private long datetime;
 
     @Override
     public String device() {
@@ -24,7 +22,7 @@ public class OXProtocolMessage implements Message {
 
     @Override
     public String deviceId() {
-        return this.deviceId;
+        return getDeviceId();
     }
 
     @Override
@@ -34,7 +32,7 @@ public class OXProtocolMessage implements Message {
 
     @Override
     public String type() {
-        return DeviceConstants.MESSAGE_TYPE_OX;
+        return DeviceConstants.MESSAGE_TYPE_HX;
     }
 
     @Override
@@ -52,6 +50,7 @@ public class OXProtocolMessage implements Message {
         return getParams();
     }
 
+
     public void setDeviceId(String deviceId) {
         this.deviceId = deviceId;
     }
@@ -64,8 +63,16 @@ public class OXProtocolMessage implements Message {
         this.params = params;
     }
 
+    public void setDatetime(long datetime) {
+        this.datetime = datetime;
+    }
+
     public String getDeviceId() {
         return deviceId;
+    }
+
+    public long getDatetime() {
+        return datetime;
     }
 
     public String getRequestId() {
@@ -76,11 +83,4 @@ public class OXProtocolMessage implements Message {
         return params;
     }
 
-    public void setDatetime(long datetime) {
-        this.datetime = datetime;
-    }
-
-    public long getDatetime() {
-        return datetime;
-    }
 }

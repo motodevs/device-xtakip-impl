@@ -1,6 +1,6 @@
-package net.motodev.device.oxprotocol;
+package com.openmts.device.xtakip.oxprotocol;
 
-import net.motodev.core.message.Parser;
+import com.openmts.core.message.Parser;
 
 import java.util.Date;
 

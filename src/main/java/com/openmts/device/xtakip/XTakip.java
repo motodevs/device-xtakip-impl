@@ -1,21 +1,21 @@
-package net.motodev.device;
+package com.openmts.device.xtakip;
 
+import com.openmts.device.xtakip.lprotocol.LProtocolMessage;
+import com.openmts.device.xtakip.lprotocol.LProtocolMessageHandler;
+import com.openmts.device.xtakip.oxprotocol.OXProtocolMessageHandler;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
-import net.motodev.core.Device;
-import net.motodev.core.DeviceStatus;
-import net.motodev.core.GpsStatus;
-import net.motodev.core.adapter.ResponseAdapter;
-import net.motodev.core.alarm.Alarm;
-import net.motodev.core.alarm.AlarmAction;
-import net.motodev.core.db.DeviceQueryHelper;
-import net.motodev.core.message.Message;
-import net.motodev.core.message.MessageHandler;
-import net.motodev.device.adapter.MessageResponseAdapter;
-import net.motodev.device.hxprotocol.HXProtocolMessageHandler;
-import net.motodev.device.lprotocol.LProtocolMessage;
-import net.motodev.device.lprotocol.LProtocolMessageHandler;
-import net.motodev.device.oxprotocol.OXProtocolMessageHandler;
+import com.openmts.core.Device;
+import com.openmts.core.DeviceStatus;
+import com.openmts.core.GpsStatus;
+import com.openmts.core.adapter.ResponseAdapter;
+import com.openmts.core.alarm.Alarm;
+import com.openmts.core.alarm.AlarmAction;
+import com.openmts.core.db.DeviceQueryHelper;
+import com.openmts.core.message.Message;
+import com.openmts.core.message.MessageHandler;
+import com.openmts.device.xtakip.adapter.MessageResponseAdapter;
+import com.openmts.device.xtakip.hxprotocol.HXProtocolMessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
