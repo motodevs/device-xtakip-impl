@@ -1,4 +1,4 @@
-package com.openmts.device.xtakip.hxprotocol;
+package com.openvehicletracking.device.xtakip.oxprotocol;
 
 
 import com.openvehicletracking.core.message.Message;
@@ -8,17 +8,16 @@ import java.util.regex.Pattern;
 
 /**
  * Created by oksuz on 20/05/2017.
- *
  */
-public class HXProtocolMessageHandler implements MessageHandler<String> {
+public class OXProtocolMessageHandler implements MessageHandler<String> {
 
     @Override
     public Pattern pattern() {
-        return Pattern.compile("^@HX;\\d+;.*;.*;.*;.*;.*!$");
+        return Pattern.compile("^@OX;\\d+;.*;.*;.*;.*!$");
     }
 
     @Override
     public Message handle(String s) {
-        return new HXProtocolParser(s).parse();
+        return new OXProtocolParser(s).parse();
     }
 }

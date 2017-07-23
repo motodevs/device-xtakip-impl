@@ -1,4 +1,4 @@
-package com.openmts.device.xtakip;
+package com.openvehicletracking.device.xtakip;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

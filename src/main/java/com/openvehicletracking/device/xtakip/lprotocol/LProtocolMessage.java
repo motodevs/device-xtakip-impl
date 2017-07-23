@@ -1,9 +1,9 @@
-package com.openmts.device.xtakip.lprotocol;
+package com.openvehicletracking.device.xtakip.lprotocol;
 
 
-import com.openmts.device.xtakip.DeviceConstants;
-import com.openmts.device.xtakip.XTakip;
-import com.openmts.device.xtakip.XTakipStatus;
+import com.openvehicletracking.device.xtakip.DeviceConstants;
+import com.openvehicletracking.device.xtakip.XTakip;
+import com.openvehicletracking.device.xtakip.XTakipStatus;
 import com.openvehicletracking.core.GpsStatus;
 import com.openvehicletracking.core.message.LocationMessage;
 import io.vertx.core.json.JsonArray;

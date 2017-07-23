@@ -1,8 +1,8 @@
-package com.openmts.device.xtakip.lprotocol;
+package com.openvehicletracking.device.xtakip.lprotocol;
 
 
-import com.openmts.device.xtakip.ConversionHelper;
-import com.openmts.device.xtakip.XTakipStatus;
+import com.openvehicletracking.device.xtakip.ConversionHelper;
+import com.openvehicletracking.device.xtakip.XTakipStatus;
 import com.openvehicletracking.core.GpsStatus;
 import com.openvehicletracking.core.message.Parser;
 

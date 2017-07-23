@@ -1,4 +1,4 @@
-package com.openmts.device.xtakip;
+package com.openvehicletracking.device.xtakip;
 
 /**
  * Created by oksuz on 04/02/2017.

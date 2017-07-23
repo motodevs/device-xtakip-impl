@@ -1,7 +1,7 @@
-package com.openmts.device.xtakip;
+package com.openvehicletracking.device.xtakip;
 
 
-import com.openmts.device.xtakip.lprotocol.LProtocolMessage;
+import com.openvehicletracking.device.xtakip.lprotocol.LProtocolMessage;
 import com.openvehicletracking.core.DeviceStatus;
 import com.openvehicletracking.core.alarm.Alarm;
 import com.openvehicletracking.core.db.DeviceDAO;

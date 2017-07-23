@@ -1,4 +1,4 @@
-package com.openmts.device.xtakip.adapter;
+package com.openvehicletracking.device.xtakip.adapter;
 
 import com.openvehicletracking.core.adapter.ResponseAdapter;
 import io.vertx.core.json.JsonObject;

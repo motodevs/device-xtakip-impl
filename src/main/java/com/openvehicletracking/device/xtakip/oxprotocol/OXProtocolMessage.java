@@ -1,8 +1,8 @@
-package com.openmts.device.xtakip.hxprotocol;
+package com.openvehicletracking.device.xtakip.oxprotocol;
 
 
-import com.openmts.device.xtakip.DeviceConstants;
-import com.openmts.device.xtakip.XTakip;
+import com.openvehicletracking.device.xtakip.DeviceConstants;
+import com.openvehicletracking.device.xtakip.XTakip;
 import com.openvehicletracking.core.message.Message;
 import io.vertx.core.json.JsonArray;
 
@@ -11,13 +11,16 @@ import java.util.Optional;
 
 /**
  * Created by oksuz on 20/05/2017.
+ *
  */
-public class HXProtocolMessage implements Message {
+
+public class OXProtocolMessage implements Message {
 
     private String deviceId;
-    private long datetime;
     private String requestId;
     private String[] params;
+    private long datetime;
+
 
     @Override
     public Optional<String> getRequestId() {
@@ -36,7 +39,7 @@ public class HXProtocolMessage implements Message {
 
     @Override
     public Optional<String> getType() {
-        return Optional.of(DeviceConstants.MESSAGE_TYPE_HX);
+        return Optional.of(DeviceConstants.MESSAGE_TYPE_OX);
     }
 
     @Override
@@ -58,15 +61,15 @@ public class HXProtocolMessage implements Message {
         this.deviceId = deviceId;
     }
 
-    public void setDatetime(long datetime) {
-        this.datetime = datetime;
-    }
-
     public void setRequestId(String requestId) {
         this.requestId = requestId;
     }
 
     public void setParams(String[] params) {
         this.params = params;
+    }
+
+    public void setDatetime(long datetime) {
+        this.datetime = datetime;
     }
 }

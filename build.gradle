@@ -1,4 +1,4 @@
-group 'com.openmts.device'
+group 'com.openvehicletracking.device'
 version '1.3.0-SNAPSHOT'
 
 apply plugin: 'java'

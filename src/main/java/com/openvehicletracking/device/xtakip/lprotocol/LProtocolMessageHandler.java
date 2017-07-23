@@ -1,4 +1,4 @@
-package com.openmts.device.xtakip.lprotocol;
+package com.openvehicletracking.device.xtakip.lprotocol;
 
 import com.openvehicletracking.core.message.Message;
 import com.openvehicletracking.core.message.MessageHandler;

@@ -1,4 +1,4 @@
-package com.openmts.device.xtakip;
+package com.openvehicletracking.device.xtakip;
 
 
 import com.openvehicletracking.core.alarm.AlarmAction;
