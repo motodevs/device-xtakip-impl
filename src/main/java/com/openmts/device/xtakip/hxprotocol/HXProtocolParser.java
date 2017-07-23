@@ -1,7 +1,7 @@
 package com.openmts.device.xtakip.hxprotocol;
 
 
-import com.openmts.core.message.Parser;
+import com.openvehicletracking.core.message.Parser;
 
 import java.util.Date;
 

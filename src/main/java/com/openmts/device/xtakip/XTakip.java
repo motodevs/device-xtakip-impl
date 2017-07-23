@@ -1,32 +1,32 @@
 package com.openmts.device.xtakip;
 
+
+import com.openmts.device.xtakip.hxprotocol.HXProtocolMessageHandler;
 import com.openmts.device.xtakip.lprotocol.LProtocolMessage;
 import com.openmts.device.xtakip.lprotocol.LProtocolMessageHandler;
 import com.openmts.device.xtakip.oxprotocol.OXProtocolMessageHandler;
+import com.openvehicletracking.core.Device;
+import com.openvehicletracking.core.DeviceStatus;
+import com.openvehicletracking.core.GpsStatus;
+import com.openvehicletracking.core.alarm.Alarm;
+import com.openvehicletracking.core.alarm.AlarmAction;
+import com.openvehicletracking.core.db.DeviceDAO;
+import com.openvehicletracking.core.message.Message;
+import com.openvehicletracking.core.message.MessageHandler;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
-import com.openmts.core.Device;
-import com.openmts.core.DeviceStatus;
-import com.openmts.core.GpsStatus;
-import com.openmts.core.adapter.ResponseAdapter;
-import com.openmts.core.alarm.Alarm;
-import com.openmts.core.alarm.AlarmAction;
-import com.openmts.core.db.DeviceQueryHelper;
-import com.openmts.core.message.Message;
-import com.openmts.core.message.MessageHandler;
-import com.openmts.device.xtakip.adapter.MessageResponseAdapter;
-import com.openmts.device.xtakip.hxprotocol.HXProtocolMessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Created by oksuz on 19/05/2017.
+ *
  */
 public class XTakip implements Device {
 
@@ -43,21 +43,17 @@ public class XTakip implements Device {
         initializeAlarmMap();
     }
 
-    public String name() {
+    public String getName() {
         return NAME;
     }
 
-    public CopyOnWriteArrayList<MessageHandler> handlers() {
+    public CopyOnWriteArrayList<MessageHandler> getHandlers() {
         return messageHandlers;
     }
 
-    @Override
-    public ResponseAdapter messageResponseAdapter() {
-        return new MessageResponseAdapter();
-    }
 
     @Override
-    public void createAlarmIfRequired(Message message, DeviceQueryHelper deviceQueryHelper, Handler<Alarm> alarmHandler) {
+    public void generateAlarmFromMessage(Message message, DeviceDAO deviceQueryHelper, Handler<Alarm> alarmHandler) {
         if (!(message instanceof LProtocolMessage)) {
             return;
         }
@@ -66,13 +62,13 @@ public class XTakip implements Device {
         if (alarms.containsKey(lProtocolMessage.getAlarm())) {
             XtakipAlarm alarm = alarms.get(lProtocolMessage.getAlarm());
 
-            HashMap<Object, Object> extra = new HashMap<>();
+            JsonObject extra = new JsonObject();
             extra.put("xTakipAlarmId", lProtocolMessage.getAlarm());
             extra.put("distance", lProtocolMessage.getDistance());
 
             Alarm deviceAlarm = new Alarm(lProtocolMessage.getDeviceId(), alarm.getDescription(), alarm.getActions(), lProtocolMessage.getDatetime(), extra);
 
-            LOGGER.info("Device alarm created {}, {}", deviceAlarm.description(), deviceAlarm.extraData());
+            LOGGER.info("device alarm alarm created {}", deviceAlarm);
             alarmHandler.handle(deviceAlarm);
             return;
         }
@@ -83,62 +79,61 @@ public class XTakip implements Device {
     }
 
     @Override
-    public void updateMeta(Message message, DeviceQueryHelper deviceQueryHelper) {
+    public void updateMeta(Message message, DeviceDAO deviceQueryHelper) {
         if (!(message instanceof LProtocolMessage)) {
             return;
         }
 
-        LOGGER.info("updating device meta");
         LProtocolMessage lProtocolMessage = (LProtocolMessage) message;
 
         JsonObject newMeta = new JsonObject()
-                .put("deviceId",lProtocolMessage.deviceId())
+                .put("deviceId",lProtocolMessage.getDeviceId())
                 .put("distance", lProtocolMessage.getDistance())
                 .put("speed", lProtocolMessage.getSpeed())
-                .put("gpsStatus", lProtocolMessage.getGpsStatus())
+                .put("gpsStatus", lProtocolMessage.getStatus())
                 .put("createdAt", new Date().getTime())
                 .put("updatedAt", new Date().getTime())
-                .put("deviceDate", lProtocolMessage.datetime())
+                .put("deviceDate", lProtocolMessage.getDatetime())
                 ;
 
 
-        if (lProtocolMessage.getStatus().getInvalidRTC() != null) {
-            newMeta.put("invalidDeviceDate", lProtocolMessage.getStatus().getInvalidRTC());
+        if (lProtocolMessage.getDeviceState().getInvalidRTC() != null) {
+            newMeta.put("invalidDeviceDate", lProtocolMessage.getDeviceState().getInvalidRTC());
         }
 
-        if (lProtocolMessage.getStatus().getIgnitiKeyOff() != null) {
-            newMeta.put("ignitionKeyOff", lProtocolMessage.getStatus().getIgnitiKeyOff());
+        if (lProtocolMessage.getDeviceState().getIgnitiKeyOff() != null) {
+            newMeta.put("ignitionKeyOff", lProtocolMessage.getDeviceState().getIgnitiKeyOff());
         }
 
         if (lProtocolMessage.getAlarm() == 13 ||
-                (lProtocolMessage.getStatus().getIgnitiKeyOff() != null && lProtocolMessage.getStatus().getIgnitiKeyOff())) {
+                (lProtocolMessage.getDeviceState().getIgnitiKeyOff() != null && lProtocolMessage.getDeviceState().getIgnitiKeyOff())) {
             newMeta.put("status", DeviceStatus.PARKED);
         }
 
         if (lProtocolMessage.getAlarm() == 12 ||
-                (lProtocolMessage.getStatus().getIgnitiKeyOff() != null && !lProtocolMessage.getStatus().getIgnitiKeyOff())) {
+                (lProtocolMessage.getDeviceState().getIgnitiKeyOff() != null && !lProtocolMessage.getDeviceState().getIgnitiKeyOff())) {
             newMeta.put("status", DeviceStatus.MOVING);
         }
 
-        if (lProtocolMessage.getGpsStatus() != GpsStatus.NO_DATA) {
+        if (lProtocolMessage.getStatus() != GpsStatus.NO_DATA) {
             newMeta.put("latitude", lProtocolMessage.getLatitude());
             newMeta.put("longitude", lProtocolMessage.getLongitude());
         }
 
-        LOGGER.info("device meta created {}", newMeta);
+        LOGGER.debug("device meta created {}", newMeta);
         if (newMeta.containsKey("status")) {
             deviceQueryHelper.upsertMeta(newMeta, new JsonObject());
-            LOGGER.info("device meta upserted");
+            LOGGER.info("device meta updated {}", newMeta);
         }
     }
 
 
     private void initializeAlarmMap() {
-        alarms.put(1, new XtakipAlarm(1, "Noktaya giriş/çıkış yapıldı", Arrays.asList(AlarmAction.INFO)));
+        alarms.put(1, new XtakipAlarm(1, "Noktaya giriş/çıkış yapıldı", Collections.singletonList(AlarmAction.INFO)));
         alarms.put(2, new XtakipAlarm(2, "RFID kart okundu", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(3, new XtakipAlarm(3, "Maksimum hiz limiti asildi", Arrays.asList(AlarmAction.INFO, AlarmAction.SEND_EMAIL)));
+        alarms.put(3, new XtakipAlarm(3, "Maksimum hız limit aşıldı", Arrays.asList(AlarmAction.INFO, AlarmAction.SEND_NOTIFICATION)));
         alarms.put(4, new XtakipAlarm(4, "Maksimum bekleme süresi aşıldı.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(5, new XtakipAlarm(5, "Hızlanma ivme limiti aşıldı.", Arrays.asList(AlarmAction.INFO)));
+        alarms.put(5, new XtakipAlarm(5, "Hızlanma ivme limiti aşıldı.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
         alarms.put(6, new XtakipAlarm(6, "Yavaşlama ivme limiti aşıldı.", Arrays.asList(AlarmAction.INFO)));
         alarms.put(7, new XtakipAlarm(7, "Akü bağlantısı kesildi.", Arrays.asList(AlarmAction.SEND_SMS, AlarmAction.SEND_NOTIFICATION)));
         alarms.put(8, new XtakipAlarm(8, "Giriş2 alarm tipi 1 oluştu.", Arrays.asList(AlarmAction.INFO)));
@@ -153,11 +148,11 @@ public class XTakip implements Device {
         alarms.put(17, new XtakipAlarm(17, "Sensör 1 min. Sıcaklık aşıldı.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
         alarms.put(18, new XtakipAlarm(18, "Giriş3 alarm tipi 1 oluştu.", Arrays.asList(AlarmAction.INFO)));
         alarms.put(19, new XtakipAlarm(19, "Giriş3 alarm tipi 2 oluştu.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(20, new XtakipAlarm(20, "Yakıt seviyesi alarmı oluştu.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(21, new XtakipAlarm(21, "GPS alınamıyor alarmı oluştu.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
+        alarms.put(20, new XtakipAlarm(20, "Yakıt seviyesi uyarısı.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
+        alarms.put(21, new XtakipAlarm(21, "GPS alınamıyor.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
         alarms.put(22, new XtakipAlarm(22, "Rölanti süresi aşıldı.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(23, new XtakipAlarm(23, "RequestID alarmı oluştu.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(24, new XtakipAlarm(24, "Taksimetre alarmı oluştu.", Arrays.asList(AlarmAction.INFO)));
+        alarms.put(23, new XtakipAlarm(23, "RequestID uyarısı.", Arrays.asList(AlarmAction.INFO)));
+        alarms.put(24, new XtakipAlarm(24, "Taksimetre uyarısı.", Arrays.asList(AlarmAction.INFO)));
         alarms.put(25, new XtakipAlarm(25, "Darbe girişi1 için limit aşıldı.", Arrays.asList(AlarmAction.INFO)));
         alarms.put(26, new XtakipAlarm(26, "Darbe girişi2 için limit aşıldı.", Arrays.asList(AlarmAction.INFO)));
         alarms.put(27, new XtakipAlarm(27, "Darbe girişi3 için limit aşıldı.", Arrays.asList(AlarmAction.INFO)));
@@ -166,12 +161,12 @@ public class XTakip implements Device {
         alarms.put(30, new XtakipAlarm(30, "Sensör 2 min. Sıcaklık aşıldı.", Arrays.asList(AlarmAction.INFO)));
         alarms.put(31, new XtakipAlarm(31, "Sensör 3 max. sıcaklık aşıldı.", Arrays.asList(AlarmAction.INFO)));
         alarms.put(32, new XtakipAlarm(32, "Sensör 3 min. Sıcaklık aşıldı.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(33, new XtakipAlarm(33, "Açı alarmı oluştu.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(34, new XtakipAlarm(34, "Transparan mod alarmı oluştu.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(35, new XtakipAlarm(35, "Düşük hız bitti alarmı oluştu.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(36, new XtakipAlarm(36, "Yüksek hız bitti alarmı oluştu.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(37, new XtakipAlarm(37, "Rolanti Bitti Alarmı oluştu.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(38, new XtakipAlarm(38, "Acil Durum Alarmı oluştu.", Arrays.asList(AlarmAction.SEND_NOTIFICATION, AlarmAction.SEND_SMS)));
+        alarms.put(33, new XtakipAlarm(33, "Açı alarmı.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
+        alarms.put(34, new XtakipAlarm(34, "Transparan mod alarmı.", Arrays.asList(AlarmAction.INFO)));
+        alarms.put(35, new XtakipAlarm(35, "Düşük hız bitti.", Arrays.asList(AlarmAction.INFO)));
+        alarms.put(36, new XtakipAlarm(36, "Yüksek hız bitti.", Arrays.asList(AlarmAction.INFO)));
+        alarms.put(37, new XtakipAlarm(37, "Rolanti Bitti.", Arrays.asList(AlarmAction.INFO)));
+        alarms.put(38, new XtakipAlarm(38, "Acil Durum.", Arrays.asList(AlarmAction.SEND_NOTIFICATION, AlarmAction.SEND_SMS)));
         alarms.put(39, new XtakipAlarm(39, "IO Expander Alarm", Arrays.asList(AlarmAction.INFO)));
         alarms.put(40, new XtakipAlarm(40, "G sensör x yön alarmı", Arrays.asList(AlarmAction.INFO)));
         alarms.put(41, new XtakipAlarm(41, "G sensör y yön alarmı", Arrays.asList(AlarmAction.INFO)));
@@ -185,9 +180,9 @@ public class XTakip implements Device {
         alarms.put(56, new XtakipAlarm(56, "G sensor Savrulma Alarmı", Arrays.asList(AlarmAction.INFO)));
         alarms.put(57, new XtakipAlarm(57, "G sensor Hizlanma Ivme Alarmı", Arrays.asList(AlarmAction.INFO)));
         alarms.put(58, new XtakipAlarm(58, "G sensor Yavaş. Ivme Alarmı", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(59, new XtakipAlarm(59, "Düşük batarya alarmı", Arrays.asList(AlarmAction.SEND_NOTIFICATION, AlarmAction.SEND_SMS)));
-        alarms.put(60, new XtakipAlarm(60, "Dolu batarya alarmı", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(61, new XtakipAlarm(61, "Araç çekilme alarmı", Arrays.asList(AlarmAction.SEND_NOTIFICATION, AlarmAction.SEND_SMS)));
+        alarms.put(59, new XtakipAlarm(59, "Düşük batarya", Arrays.asList(AlarmAction.SEND_NOTIFICATION, AlarmAction.SEND_SMS)));
+        alarms.put(60, new XtakipAlarm(60, "Dolu batarya", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
+        alarms.put(61, new XtakipAlarm(61, "Araç çekilme uyarısı", Arrays.asList(AlarmAction.SEND_NOTIFICATION, AlarmAction.SEND_SMS)));
         alarms.put(62, new XtakipAlarm(62, "Cihaz kapatıldı", Arrays.asList(AlarmAction.SEND_NOTIFICATION, AlarmAction.SEND_SMS)));
         alarms.put(63, new XtakipAlarm(63, "Cihaz harekete başladı", Arrays.asList(AlarmAction.SEND_NOTIFICATION, AlarmAction.SEND_SMS)));
         alarms.put(64, new XtakipAlarm(64, "Cihaz hareketi bitti.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
@@ -202,7 +197,7 @@ public class XTakip implements Device {
         alarms.put(73, new XtakipAlarm(73, "Geçersiz iButton ID", Arrays.asList(AlarmAction.INFO)));
         alarms.put(74, new XtakipAlarm(74, "Jamming Alarm", Arrays.asList(AlarmAction.SEND_SMS, AlarmAction.SEND_NOTIFICATION)));
         alarms.put(75, new XtakipAlarm(75, "Akü bağlantısı takıldı.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(76, new XtakipAlarm(76, "Serbest Düşüş Alarmı", Arrays.asList(AlarmAction.INFO)));
+        alarms.put(76, new XtakipAlarm(76, "Serbest düşüş uyarısı", Arrays.asList(AlarmAction.INFO)));
         alarms.put(77, new XtakipAlarm(77, "Sistem yeniden başlatıldı.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
 
     }

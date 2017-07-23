@@ -1,12 +1,14 @@
 package com.openmts.device.xtakip;
 
-import com.openmts.core.alarm.AlarmAction;
+
+import com.openvehicletracking.core.alarm.AlarmAction;
 
 import java.util.Arrays;
 import java.util.List;
 
 /**
  * Created by oksuz on 19/05/2017.
+ *
  */
 public class DeviceConstants {
 
@@ -15,7 +17,7 @@ public class DeviceConstants {
     public static final String MESSAGE_TYPE_OX = "OX";
 
 
-    public static final String ALARM_MOVING_DESCRIPTION = "Bir hareket algilandi.";
+    public static final String ALARM_MOVING_DESCRIPTION = "Bir hareket algılandı.";
     public static final int ALARM_MOVING_ID = 99;
     public static final List<AlarmAction> CRITICAL_ALARM_ACTION = Arrays.asList(AlarmAction.SEND_NOTIFICATION, AlarmAction.SEND_SMS);
 

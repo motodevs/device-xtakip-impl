@@ -1,7 +1,8 @@
 package com.openmts.device.xtakip.oxprotocol;
 
-import com.openmts.core.message.Message;
-import com.openmts.core.message.MessageHandler;
+
+import com.openvehicletracking.core.message.Message;
+import com.openvehicletracking.core.message.MessageHandler;
 
 import java.util.regex.Pattern;
 

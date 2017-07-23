@@ -1,39 +1,82 @@
 package com.openmts.device.xtakip.lprotocol;
 
 
-import com.openmts.core.GpsStatus;
-import com.openmts.core.message.Message;
 import com.openmts.device.xtakip.DeviceConstants;
 import com.openmts.device.xtakip.XTakip;
 import com.openmts.device.xtakip.XTakipStatus;
+import com.openvehicletracking.core.GpsStatus;
+import com.openvehicletracking.core.message.LocationMessage;
+import io.vertx.core.json.JsonArray;
+
+import java.util.Optional;
 
 /**
  * Created by oksuz on 19/05/2017.
+ *
  */
-public class LProtocolMessage implements Message {
+public class LProtocolMessage implements LocationMessage {
 
-    private String header;
-    private String deviceId;
-    private long datetime;
-    private GpsStatus gpsStatus;
+    /*
+    interface fields
+     */
     private double latitude;
     private double longitude;
-    private XTakipStatus status;
     private double speed;
-    private double distance;
-    private String direction;
+    private double direction;
+    private long datetime;
+    private GpsStatus status;
+    private String deviceId;
+
+    // device
     private int alarm;
+    private XTakipStatus deviceState;
+    private double distance;
     private String additional;
     private String rawMessage;
 
     @Override
-    public String device() {
+    public double getLatitude() {
+        return latitude;
+    }
+
+    @Override
+    public double getLongitude() {
+        return longitude;
+    }
+
+    @Override
+    public double getSpeed() {
+        return speed;
+    }
+
+    @Override
+    public double getDirection() {
+        return direction;
+    }
+
+    @Override
+    public GpsStatus getStatus() {
+        return status;
+    }
+
+    @Override
+    public Optional<String> getRequestId() {
+        return Optional.empty();
+    }
+
+    @Override
+    public String getDevice() {
+        return deviceId;
+    }
+
+    @Override
+    public String getDeviceId() {
         return XTakip.NAME;
     }
 
     @Override
-    public String deviceId() {
-        return this.deviceId;
+    public Optional<String> getType() {
+        return Optional.of(DeviceConstants.MESSAGE_TYPE_L);
     }
 
     @Override
@@ -42,40 +85,37 @@ public class LProtocolMessage implements Message {
     }
 
     @Override
-    public String type() {
-        return DeviceConstants.MESSAGE_TYPE_L;
+    public long getDatetime() {
+        return datetime;
     }
 
     @Override
-    public long datetime() {
-        return getDatetime();
+    public Optional<JsonArray> getExtraParameters() {
+        return Optional.empty();
     }
 
-    @Override
-    public String requestId() {
-        return null;
+    public int getAlarm() {
+        return alarm;
     }
 
-    @Override
-    public String[] extraParameters() {
-        return null;
+    public XTakipStatus getDeviceState() {
+        return deviceState;
     }
 
-    public void setHeader(String header) {
-        this.header = header;
+    public double getDistance() {
+        return distance;
     }
 
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
+    public String getAdditional() {
+        return additional;
     }
 
-    public void setDatetime(long datetime) {
-        this.datetime = datetime;
+    public String getRawMessage() {
+        return rawMessage;
     }
 
-    public void setGpsStatus(GpsStatus gpsStatus) {
-        this.gpsStatus = gpsStatus;
-    }
+    // setters
+
 
     public void setLatitude(double latitude) {
         this.latitude = latitude;
@@ -85,80 +125,40 @@ public class LProtocolMessage implements Message {
         this.longitude = longitude;
     }
 
-    public void setStatus(XTakipStatus status) {
-        this.status = status;
-    }
-
     public void setSpeed(double speed) {
         this.speed = speed;
     }
 
-    public void setDistance(double distance) {
-        this.distance = distance;
+    public void setDirection(double direction) {
+        this.direction = direction;
     }
 
-    public void setDirection(String direction) {
-        this.direction = direction;
+    public void setDatetime(long datetime) {
+        this.datetime = datetime;
+    }
+
+    public void setStatus(GpsStatus status) {
+        this.status = status;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
     public void setAlarm(int alarm) {
         this.alarm = alarm;
     }
 
+    public void setDeviceState(XTakipStatus deviceState) {
+        this.deviceState = deviceState;
+    }
+
+    public void setDistance(double distance) {
+        this.distance = distance;
+    }
+
     public void setAdditional(String additional) {
         this.additional = additional;
-    }
-
-    public String getHeader() {
-        return header;
-    }
-
-    public String getDeviceId() {
-        return deviceId;
-    }
-
-    public long getDatetime() {
-        return datetime;
-    }
-
-    public GpsStatus getGpsStatus() {
-        return gpsStatus;
-    }
-
-    public double getLatitude() {
-        return latitude;
-    }
-
-    public double getLongitude() {
-        return longitude;
-    }
-
-    public XTakipStatus getStatus() {
-        return status;
-    }
-
-    public double getSpeed() {
-        return speed;
-    }
-
-    public double getDistance() {
-        return distance;
-    }
-
-    public String getDirection() {
-        return direction;
-    }
-
-    public int getAlarm() {
-        return alarm;
-    }
-
-    public String getAdditional() {
-        return additional;
-    }
-
-    public String getRawMessage() {
-        return rawMessage;
     }
 
     public void setRawMessage(String rawMessage) {

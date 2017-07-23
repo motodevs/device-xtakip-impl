@@ -1,6 +1,7 @@
 package com.openmts.device.xtakip;
 
-import com.openmts.core.alarm.AlarmAction;
+
+import com.openvehicletracking.core.alarm.AlarmAction;
 
 import java.util.List;
 

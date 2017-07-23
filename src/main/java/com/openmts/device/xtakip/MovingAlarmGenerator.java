@@ -1,17 +1,16 @@
 package com.openmts.device.xtakip;
 
 
+import com.openmts.device.xtakip.lprotocol.LProtocolMessage;
+import com.openvehicletracking.core.DeviceStatus;
+import com.openvehicletracking.core.alarm.Alarm;
+import com.openvehicletracking.core.db.DeviceDAO;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
-import com.openmts.core.DeviceStatus;
-import com.openmts.core.alarm.Alarm;
-import com.openmts.core.db.DeviceQueryHelper;
-import com.openmts.device.xtakip.lprotocol.LProtocolMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -27,24 +26,24 @@ public class MovingAlarmGenerator {
     private static final long FIVE_MIN_IN_MILIS = MILLISECONDS.convert(5, MINUTES);
 
     private LProtocolMessage message;
-    private DeviceQueryHelper deviceQueryHelper;
+    private DeviceDAO deviceDAO;
     private Handler<Alarm> alarmHandler;
 
 
-    public MovingAlarmGenerator(LProtocolMessage message, DeviceQueryHelper deviceQueryHelper, Handler<Alarm> alarmHandler) {
+    public MovingAlarmGenerator(LProtocolMessage message, DeviceDAO deviceDAO, Handler<Alarm> alarmHandler) {
         this.message = message;
-        this.deviceQueryHelper = deviceQueryHelper;
+        this.deviceDAO = deviceDAO;
         this.alarmHandler = alarmHandler;
     }
 
     public void create() {
-        deviceQueryHelper.readMeta(metaHandler(metaSuccessHandler()));
+        deviceDAO.readMeta(metaHandler(metaSuccessHandler()));
     }
 
-    private Handler<Object> metaHandler(Handler<JsonObject> metaSuccessHandler) {
+    private Handler<JsonObject> metaHandler(Handler<JsonObject> metaSuccessHandler) {
         return listOfDeviceMeta -> {
 
-            if (listOfDeviceMeta == null || ((List) listOfDeviceMeta).size() == 0) {
+            if (listOfDeviceMeta == null || listOfDeviceMeta.size() == 0) {
                 LOGGER.info("device status unknown");
                 return;
             }
@@ -65,8 +64,9 @@ public class MovingAlarmGenerator {
                 return;
             }
 
-            if ((status == DeviceStatus.CONNECTION_LOST || status == DeviceStatus.PARKED) && message.getStatus().getIgnitiKeyOff() != null && message.getStatus().getIgnitiKeyOff()) {
-                deviceQueryHelper.readAlarms(readAlarmHandler(), 1);
+            if ((status == DeviceStatus.CONNECTION_LOST || status == DeviceStatus.PARKED) && message.getDeviceState().getIgnitiKeyOff() != null && message.getDeviceState().getIgnitiKeyOff()) {
+                LOGGER.info("device connection lost or device parked and state ignition key off");
+                deviceDAO.readAlarms(readAlarmHandler(), 1);
             }
         };
     }
@@ -74,22 +74,26 @@ public class MovingAlarmGenerator {
     private Handler<List<Alarm>> readAlarmHandler() {
         return alarms -> {
             if (alarms.size() == 0) {
+                LOGGER.info("empty alarm list generating moving alarm");
                 alarmHandler.handle(getMovingAlarm(message));
                 return;
             }
 
             Alarm lastAlarm = alarms.get(0);
-            HashMap<Object, Object> extra = lastAlarm.extraData();
+            JsonObject extra = lastAlarm.getExtraData();
 
-            double xtakipAlarmId = (double)extra.get("xTakipAlarmId");
-            double alarmMovingId = (double) DeviceConstants.ALARM_MOVING_ID;
+            double xtakipAlarmId = extra.getDouble("xTakipAlarmId");
+            double movingAlarmId = (double) DeviceConstants.ALARM_MOVING_ID;
+            double timeDiff = new Date().getTime() - lastAlarm.getDatetime();
 
-            if (new Date().getTime() - lastAlarm.datetime() > FIVE_MIN_IN_MILIS && extra.containsKey("xTakipAlarmId") && xtakipAlarmId != alarmMovingId) {
+            if (timeDiff > FIVE_MIN_IN_MILIS && extra.containsKey("xTakipAlarmId") && xtakipAlarmId != movingAlarmId) {
+                LOGGER.info("time diff over five min ({}ms) and last alert is not movingAlert. generating moving alarm");
                 alarmHandler.handle(getMovingAlarm(message));
                 return;
             }
 
-            if (extra.containsKey("xTakipAlarmId") && xtakipAlarmId != alarmMovingId && message.getDistance() - (double)extra.get("distance") > 1) {
+            if (extra.containsKey("xTakipAlarmId") && xtakipAlarmId == movingAlarmId && message.getDistance() - extra.getDouble("distance") > 1) {
+                LOGGER.info("last alarm is moving alarm and device moved over 1km. generating moving alarm");
                 alarmHandler.handle(getMovingAlarm(message));
             }
 
@@ -98,9 +102,9 @@ public class MovingAlarmGenerator {
     }
 
     public Alarm getMovingAlarm(LProtocolMessage message) {
-        HashMap<Object, Object> extra = new HashMap<>();
+        JsonObject extra = new JsonObject();
         extra.put("xTakipAlarmId", DeviceConstants.ALARM_MOVING_ID);
         extra.put("distance", message.getDistance());
-        return new Alarm(message.getDeviceId(), DeviceConstants.ALARM_MOVING_DESCRIPTION, DeviceConstants.CRITICAL_ALARM_ACTION, message.datetime(), extra);
+        return new Alarm(message.getDeviceId(), DeviceConstants.ALARM_MOVING_DESCRIPTION, DeviceConstants.CRITICAL_ALARM_ACTION, message.getDatetime(), extra);
     }
 }

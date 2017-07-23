@@ -1,9 +1,13 @@
 package com.openmts.device.xtakip.oxprotocol;
 
 
-import com.openmts.core.message.Message;
-import com.openmts.device.xtakip.XTakip;
 import com.openmts.device.xtakip.DeviceConstants;
+import com.openmts.device.xtakip.XTakip;
+import com.openvehicletracking.core.message.Message;
+import io.vertx.core.json.JsonArray;
+
+import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * Created by oksuz on 20/05/2017.
@@ -17,14 +21,25 @@ public class OXProtocolMessage implements Message {
     private String[] params;
     private long datetime;
 
+
     @Override
-    public String device() {
+    public Optional<String> getRequestId() {
+        return Optional.of(requestId);
+    }
+
+    @Override
+    public String getDevice() {
         return XTakip.NAME;
     }
 
     @Override
-    public String deviceId() {
-        return this.deviceId;
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    @Override
+    public Optional<String> getType() {
+        return Optional.of(DeviceConstants.MESSAGE_TYPE_OX);
     }
 
     @Override
@@ -33,23 +48,13 @@ public class OXProtocolMessage implements Message {
     }
 
     @Override
-    public String type() {
-        return DeviceConstants.MESSAGE_TYPE_OX;
+    public long getDatetime() {
+        return datetime;
     }
 
     @Override
-    public long datetime() {
-        return getDatetime();
-    }
-
-    @Override
-    public String requestId() {
-        return getRequestId();
-    }
-
-    @Override
-    public String[] extraParameters() {
-        return getParams();
+    public Optional<JsonArray> getExtraParameters() {
+        return Optional.of(new JsonArray(Arrays.asList(this.params)));
     }
 
     public void setDeviceId(String deviceId) {
@@ -64,23 +69,7 @@ public class OXProtocolMessage implements Message {
         this.params = params;
     }
 
-    public String getDeviceId() {
-        return deviceId;
-    }
-
-    public String getRequestId() {
-        return requestId;
-    }
-
-    public String[] getParams() {
-        return params;
-    }
-
     public void setDatetime(long datetime) {
         this.datetime = datetime;
-    }
-
-    public long getDatetime() {
-        return datetime;
     }
 }

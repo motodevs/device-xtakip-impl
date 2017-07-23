@@ -1,9 +1,13 @@
 package com.openmts.device.xtakip.hxprotocol;
 
 
-import com.openmts.core.message.Message;
 import com.openmts.device.xtakip.DeviceConstants;
 import com.openmts.device.xtakip.XTakip;
+import com.openvehicletracking.core.message.Message;
+import io.vertx.core.json.JsonArray;
+
+import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * Created by oksuz on 20/05/2017.
@@ -16,13 +20,23 @@ public class HXProtocolMessage implements Message {
     private String[] params;
 
     @Override
-    public String device() {
+    public Optional<String> getRequestId() {
+        return Optional.of(requestId);
+    }
+
+    @Override
+    public String getDevice() {
         return XTakip.NAME;
     }
 
     @Override
-    public String deviceId() {
-        return getDeviceId();
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    @Override
+    public Optional<String> getType() {
+        return Optional.of(DeviceConstants.MESSAGE_TYPE_HX);
     }
 
     @Override
@@ -31,28 +45,21 @@ public class HXProtocolMessage implements Message {
     }
 
     @Override
-    public String type() {
-        return DeviceConstants.MESSAGE_TYPE_HX;
+    public long getDatetime() {
+        return datetime;
     }
 
     @Override
-    public long datetime() {
-        return getDatetime();
+    public Optional<JsonArray> getExtraParameters() {
+        return Optional.of(new JsonArray(Arrays.asList(this.params)));
     }
-
-    @Override
-    public String requestId() {
-        return getRequestId();
-    }
-
-    @Override
-    public String[] extraParameters() {
-        return getParams();
-    }
-
 
     public void setDeviceId(String deviceId) {
         this.deviceId = deviceId;
+    }
+
+    public void setDatetime(long datetime) {
+        this.datetime = datetime;
     }
 
     public void setRequestId(String requestId) {
@@ -62,25 +69,4 @@ public class HXProtocolMessage implements Message {
     public void setParams(String[] params) {
         this.params = params;
     }
-
-    public void setDatetime(long datetime) {
-        this.datetime = datetime;
-    }
-
-    public String getDeviceId() {
-        return deviceId;
-    }
-
-    public long getDatetime() {
-        return datetime;
-    }
-
-    public String getRequestId() {
-        return requestId;
-    }
-
-    public String[] getParams() {
-        return params;
-    }
-
 }

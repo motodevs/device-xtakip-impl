@@ -1,6 +1,6 @@
 package com.openmts.device.xtakip.adapter;
 
-import com.openmts.core.adapter.ResponseAdapter;
+import com.openvehicletracking.core.adapter.ResponseAdapter;
 import io.vertx.core.json.JsonObject;
 
 import java.util.List;

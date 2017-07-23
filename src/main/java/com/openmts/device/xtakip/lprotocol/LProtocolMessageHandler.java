@@ -1,12 +1,13 @@
 package com.openmts.device.xtakip.lprotocol;
 
-import com.openmts.core.message.Message;
-import com.openmts.core.message.MessageHandler;
+import com.openvehicletracking.core.message.Message;
+import com.openvehicletracking.core.message.MessageHandler;
 
 import java.util.regex.Pattern;
 
 /**
  * Created by oksuz on 19/05/2017.
+ *
  */
 public class LProtocolMessageHandler implements MessageHandler<String> {
 

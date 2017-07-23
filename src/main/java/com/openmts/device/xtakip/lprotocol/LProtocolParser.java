@@ -1,10 +1,10 @@
 package com.openmts.device.xtakip.lprotocol;
 
 
-import com.openmts.core.GpsStatus;
-import com.openmts.core.message.Parser;
 import com.openmts.device.xtakip.ConversionHelper;
 import com.openmts.device.xtakip.XTakipStatus;
+import com.openvehicletracking.core.GpsStatus;
+import com.openvehicletracking.core.message.Parser;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -62,7 +62,7 @@ public class LProtocolParser implements Parser {
         double longitude = ConversionHelper.convertLongitude(message.substring(0, 9));
         message = message.substring(9);
 
-        XTakipStatus status = parseStatus(message.substring(0, 8));
+        XTakipStatus status = parseState(message.substring(0, 8));
         message = message.substring(8);
 
         double speed = ConversionHelper.knotToKm(message.substring(0, 4));
@@ -71,7 +71,7 @@ public class LProtocolParser implements Parser {
         double distance = ConversionHelper.getDistance(message.substring(0, 6));
         message = message.substring(6);
 
-        String direction = message.substring(0, 3);
+        int direction = Integer.parseInt(message.substring(0, 3), 16);
         message = message.substring(3);
 
         int alarm = Integer.parseInt(message.substring(0, 3), 16);
@@ -80,12 +80,11 @@ public class LProtocolParser implements Parser {
         String additional = message;
 
         p.setRawMessage(getMessage());
-        p.setHeader(header);
         p.setDeviceId(deviceId);
-        p.setGpsStatus(gpsStatus);
+        p.setStatus(gpsStatus);
         p.setLatitude(latitude);
         p.setLongitude(longitude);
-        p.setStatus(status);
+        p.setDeviceState(status);
         p.setSpeed(speed);
         p.setDistance(distance);
         p.setAlarm(alarm);
@@ -100,7 +99,7 @@ public class LProtocolParser implements Parser {
         return p;
     }
 
-    private XTakipStatus parseStatus(String raw) {
+    private XTakipStatus parseState(String raw) {
         XTakipStatus status = new XTakipStatus();
         status.setRaw(raw);
         int convertedStatus = Integer.parseInt(raw);
