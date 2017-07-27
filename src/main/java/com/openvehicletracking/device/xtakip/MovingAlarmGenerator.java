@@ -41,15 +41,14 @@ public class MovingAlarmGenerator {
     }
 
     private Handler<JsonObject> metaHandler(Handler<JsonObject> metaSuccessHandler) {
-        return listOfDeviceMeta -> {
+        return deviceMeta -> {
 
-            if (listOfDeviceMeta == null || listOfDeviceMeta.size() == 0) {
+            if (deviceMeta == null) {
                 LOGGER.info("device status unknown");
                 return;
             }
 
-            JsonObject meta = (JsonObject) ((List) listOfDeviceMeta).get(0);
-            metaSuccessHandler.handle(meta);
+            metaSuccessHandler.handle(deviceMeta);
         };
     }
 

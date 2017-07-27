@@ -34,6 +34,10 @@ public class LProtocolMessage implements LocationMessage {
     private String additional;
     private String rawMessage;
 
+    // json serialization
+    private final String device = XTakip.NAME;
+    private final String type = DeviceConstants.MESSAGE_TYPE_L;
+
     @Override
     public double getLatitude() {
         return latitude;
@@ -66,17 +70,17 @@ public class LProtocolMessage implements LocationMessage {
 
     @Override
     public String getDevice() {
-        return deviceId;
+        return device;
     }
 
     @Override
     public String getDeviceId() {
-        return XTakip.NAME;
+        return deviceId;
     }
 
     @Override
     public Optional<String> getType() {
-        return Optional.of(DeviceConstants.MESSAGE_TYPE_L);
+        return Optional.of(type);
     }
 
     @Override
@@ -163,5 +167,12 @@ public class LProtocolMessage implements LocationMessage {
 
     public void setRawMessage(String rawMessage) {
         this.rawMessage = rawMessage;
+    }
+
+    @Override
+    public String toString() {
+        return "LProtocolMessage{" +
+                "rawMessage='" + rawMessage + '\'' +
+                '}';
     }
 }

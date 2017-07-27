@@ -1,6 +1,7 @@
 package com.openvehicletracking.device.xtakip;
 
 
+import com.openvehicletracking.core.db.CommandDAO;
 import com.openvehicletracking.device.xtakip.hxprotocol.HXProtocolMessageHandler;
 import com.openvehicletracking.device.xtakip.lprotocol.LProtocolMessage;
 import com.openvehicletracking.device.xtakip.lprotocol.LProtocolMessageHandler;
@@ -14,6 +15,7 @@ import com.openvehicletracking.core.db.DeviceDAO;
 import com.openvehicletracking.core.message.Message;
 import com.openvehicletracking.core.message.MessageHandler;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +70,7 @@ public class XTakip implements Device {
 
             Alarm deviceAlarm = new Alarm(lProtocolMessage.getDeviceId(), alarm.getDescription(), alarm.getActions(), lProtocolMessage.getDatetime(), extra);
 
-            LOGGER.info("device alarm alarm created {}", deviceAlarm);
+            LOGGER.info("device alarm created {}", deviceAlarm);
             alarmHandler.handle(deviceAlarm);
             return;
         }
@@ -200,5 +202,15 @@ public class XTakip implements Device {
         alarms.put(76, new XtakipAlarm(76, "Serbest düşüş uyarısı", Arrays.asList(AlarmAction.INFO)));
         alarms.put(77, new XtakipAlarm(77, "Sistem yeniden başlatıldı.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
 
+    }
+
+    @Override
+    public void replyMessage(Message message, CommandDAO commandDAO, Handler<JsonArray> handler) {
+        commandDAO.getUnread(commands -> {
+            if (null != commands && commands.size() > 0) {
+                LOGGER.info("replying message: {}, replies: {}", message, commands);
+                handler.handle(commands);
+            }
+        });
     }
 }

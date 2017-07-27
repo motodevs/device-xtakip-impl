@@ -69,4 +69,14 @@ public class HXProtocolMessage implements Message {
     public void setParams(String[] params) {
         this.params = params;
     }
+
+    @Override
+    public String toString() {
+        return "HXProtocolMessage{" +
+                "deviceId='" + deviceId + '\'' +
+                ", datetime=" + datetime +
+                ", requestId='" + requestId + '\'' +
+                ", params=" + Arrays.toString(params) +
+                '}';
+    }
 }

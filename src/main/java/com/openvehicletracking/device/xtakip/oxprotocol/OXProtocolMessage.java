@@ -72,4 +72,14 @@ public class OXProtocolMessage implements Message {
     public void setDatetime(long datetime) {
         this.datetime = datetime;
     }
+
+    @Override
+    public String toString() {
+        return "OXProtocolMessage{" +
+                "deviceId='" + deviceId + '\'' +
+                ", requestId='" + requestId + '\'' +
+                ", params=" + Arrays.toString(params) +
+                ", datetime=" + datetime +
+                '}';
+    }
 }
