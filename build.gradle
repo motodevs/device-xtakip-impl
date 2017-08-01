@@ -1,5 +1,5 @@
 group 'com.openvehicletracking.device'
-version '1.3.1-SNAPSHOT'
+version '1.3.1'
 
 apply plugin: 'java'
 apply plugin: 'idea'
@@ -14,7 +14,70 @@ repositories {
     mavenCentral()
 }
 
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
-    compile 'com.openvehicletracking:openvehicletracking-core:1.3.1-SNAPSHOT'
+    compile 'com.openvehicletracking:openvehicletracking-core:1.3.1'
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'OpenVehicleTracking Xtakip Device Implementation'
+                packaging 'jar'
+                description 'xtakip tracking device message parsers and device implementations'
+                url 'http://openvehicletracking.com'
+
+                scm {
+                    connection 'scm:git:https://github.com/openvehicletracking/device-xtakip-impl.git'
+                    developerConnection 'scm:git:https://github.com/openvehicletracking/device-xtakip-impl.git'
+                    url 'https://github.com/openvehicletracking/device-xtakip-impl'
+                }
+
+                licenses {
+                    license {
+                        name 'MIT'
+                        url 'https://github.com/openvehicletracking/device-xtakip-impl/blob/master/LICENSE'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'oksuz'
+                        name 'Yunus Oksuz'
+                        email 'yunusoksuz@gmail.com'
+                    }
+                }
+            }
+        }
+    }
 }
