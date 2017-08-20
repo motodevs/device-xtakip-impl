@@ -1,6 +1,7 @@
 package com.openvehicletracking.device.xtakip;
 
 
+import com.openvehicletracking.core.DeviceState;
 import com.openvehicletracking.device.xtakip.lprotocol.LProtocolMessage;
 import com.openvehicletracking.core.DeviceStatus;
 import com.openvehicletracking.core.alarm.Alarm;
@@ -52,18 +53,11 @@ public class MovingAlarmGenerator {
         };
     }
 
-
     private Handler<JsonObject> metaSuccessHandler() {
         return meta -> {
-            DeviceStatus status;
-            try {
-                status = DeviceStatus.valueOf(meta.getString("status"));
-            } catch (Exception e) {
-                LOGGER.error("device status not found in meta", e);
-                return;
-            }
+            DeviceState state = DeviceState.fromJson(meta);
 
-            if ((status == DeviceStatus.CONNECTION_LOST || status == DeviceStatus.PARKED) && message.getDeviceState().getIgnitiKeyOff() != null && message.getDeviceState().getIgnitiKeyOff()) {
+            if ((state.getDeviceStatus() == DeviceStatus.CONNECTION_LOST || state.getDeviceStatus() == DeviceStatus.PARKED) && message.getDeviceState().getIgnitiKeyOff() != null && message.getDeviceState().getIgnitiKeyOff()) {
                 LOGGER.info("device connection lost or device parked and state ignition key off");
                 deviceDAO.readAlarms(readAlarmHandler(), 1);
             }

@@ -1,6 +1,7 @@
 package com.openvehicletracking.device.xtakip;
 
 
+import com.openvehicletracking.core.DeviceState;
 import com.openvehicletracking.core.db.CommandDAO;
 import com.openvehicletracking.device.xtakip.hxprotocol.HXProtocolMessageHandler;
 import com.openvehicletracking.device.xtakip.lprotocol.LProtocolMessage;
@@ -88,44 +89,46 @@ public class XTakip implements Device {
 
         LProtocolMessage lProtocolMessage = (LProtocolMessage) message;
 
-        JsonObject newMeta = new JsonObject()
-                .put("deviceId",lProtocolMessage.getDeviceId())
-                .put("distance", lProtocolMessage.getDistance())
-                .put("speed", lProtocolMessage.getSpeed())
-                .put("gpsStatus", lProtocolMessage.getStatus())
-                .put("createdAt", new Date().getTime())
-                .put("updatedAt", new Date().getTime())
-                .put("deviceDate", lProtocolMessage.getDatetime())
-                ;
+        DeviceState state = new DeviceState();
+
+        state.setDeviceId(lProtocolMessage.getDeviceId());
+        state.setDistance(lProtocolMessage.getDistance());
+        state.setDirection(lProtocolMessage.getDirection());
+        state.setSpeed(lProtocolMessage.getSpeed());
+        state.setGpsStatus(lProtocolMessage.getStatus());
+        state.setCreatedAt(new Date().getTime());
+        state.setUpdatedAt(new Date().getTime());
+        state.setDeviceDate(lProtocolMessage.getDatetime());
 
 
         if (lProtocolMessage.getDeviceState().getInvalidRTC() != null) {
-            newMeta.put("invalidDeviceDate", lProtocolMessage.getDeviceState().getInvalidRTC());
+            state.setInvalidDeviceDate(lProtocolMessage.getDeviceState().getInvalidRTC());
         }
 
         if (lProtocolMessage.getDeviceState().getIgnitiKeyOff() != null) {
-            newMeta.put("ignitionKeyOff", lProtocolMessage.getDeviceState().getIgnitiKeyOff());
+            state.setIgnitionKeyOff(lProtocolMessage.getDeviceState().getIgnitiKeyOff());
         }
 
         if (lProtocolMessage.getAlarm() == 13 ||
                 (lProtocolMessage.getDeviceState().getIgnitiKeyOff() != null && lProtocolMessage.getDeviceState().getIgnitiKeyOff())) {
-            newMeta.put("status", DeviceStatus.PARKED);
+            state.setDeviceStatus(DeviceStatus.PARKED);
         }
 
         if (lProtocolMessage.getAlarm() == 12 ||
                 (lProtocolMessage.getDeviceState().getIgnitiKeyOff() != null && !lProtocolMessage.getDeviceState().getIgnitiKeyOff())) {
-            newMeta.put("status", DeviceStatus.MOVING);
+            state.setDeviceStatus(DeviceStatus.MOVING);
         }
 
         if (lProtocolMessage.getStatus() != GpsStatus.NO_DATA) {
-            newMeta.put("latitude", lProtocolMessage.getLatitude());
-            newMeta.put("longitude", lProtocolMessage.getLongitude());
+            state.setLatitude(lProtocolMessage.getLatitude());
+            state.setLongitude(lProtocolMessage.getLongitude());
         }
 
-        LOGGER.debug("device meta created {}", newMeta);
-        if (newMeta.containsKey("status")) {
-            deviceQueryHelper.upsertMeta(newMeta, new JsonObject());
-            LOGGER.info("device meta updated {}", newMeta);
+        JsonObject stateJson = state.toJson();
+        LOGGER.debug("device meta created {}", stateJson.toString());
+        if (state.getDeviceStatus() != null) {
+            deviceQueryHelper.upsertMeta(state, new JsonObject());
+            LOGGER.info("device meta updated {}", stateJson.toString());
         }
     }
 
