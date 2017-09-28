@@ -4,8 +4,6 @@ package com.openvehicletracking.device.xtakip.lprotocol;
 import com.google.gson.JsonArray;
 import com.openvehicletracking.core.GpsStatus;
 import com.openvehicletracking.core.message.LocationMessage;
-import com.openvehicletracking.core.message.Reply;
-import com.openvehicletracking.core.message.impl.StringReplies;
 import com.openvehicletracking.device.xtakip.DeviceConstants;
 import com.openvehicletracking.device.xtakip.XTakip;
 import com.openvehicletracking.device.xtakip.XTakipStatus;
@@ -173,11 +171,6 @@ public class LProtocolMessage implements LocationMessage {
     @Override
     public boolean isReplyRequired() {
         return true;
-    }
-
-    @Override
-    public Class<? extends Reply> getReplyType() {
-        return StringReplies.class;
     }
 
     @Override

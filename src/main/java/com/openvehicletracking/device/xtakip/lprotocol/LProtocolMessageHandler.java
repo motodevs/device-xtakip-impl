@@ -15,7 +15,9 @@ public class LProtocolMessageHandler implements MessageHandler<String> {
         return Pattern.compile("^@L.*!$");
     }
 
-    public Message handle(String message) {
-        return new LProtocolParser(message).parse();
+    @Override
+    public Message handle(String obj) {
+        return new LProtocolParser(obj).parse();
     }
+
 }

@@ -9,8 +9,7 @@ import com.openvehicletracking.core.alarm.Alarm;
 import com.openvehicletracking.core.geojson.GeoJsonResponse;
 import com.openvehicletracking.core.message.*;
 import com.openvehicletracking.core.message.exception.UnsupportedReplyTypeException;
-import com.openvehicletracking.core.message.impl.StringReplies;
-import com.openvehicletracking.core.message.impl.StringReply;
+import com.openvehicletracking.core.message.impl.ReplyImpl;
 import com.openvehicletracking.device.xtakip.hxprotocol.HXProtocolMessageHandler;
 import com.openvehicletracking.device.xtakip.lprotocol.LProtocolMessage;
 import com.openvehicletracking.device.xtakip.lprotocol.LProtocolMessageHandler;
@@ -54,7 +53,7 @@ public class XTakip implements Device {
 
     @Override
     public Alarm generateAlarmFromMessage(Message message) {
-        if (!(message instanceof LProtocolMessage)) {
+        if (message.getClass() != getLocationType()) {
             return null;
         }
 
@@ -75,21 +74,15 @@ public class XTakip implements Device {
     }
 
     @Override
-    public <T extends Reply> T replyMessage(Message message, List<? extends CommandMessage> unreadMessages, Class<T> tClass) throws UnsupportedReplyTypeException {
-
+    public <T> Reply<T> replyMessage(Message message, List<? extends CommandMessage> unreadMessages) throws UnsupportedReplyTypeException {
         if (unreadMessages == null || unreadMessages.size() == 0) {
             return null;
         }
 
-        if (tClass == StringReply.class) {
-            return tClass.cast(new StringReply(unreadMessages.get(0).getCommand()));
-        } else if (tClass == StringReplies.class) {
-            List<String> stringReplies = unreadMessages.stream().map(CommandMessage::getCommand).collect(Collectors.toList());
-            return tClass.cast(new StringReplies(stringReplies));
-        }
-
-        throw new UnsupportedReplyTypeException(String.format("ReplyType %s is not supported", tClass.getName()));
+        List<T> replies = unreadMessages.stream().map(CommandMessage<T>::getCommand).collect(Collectors.toList());
+        return new ReplyImpl<>(replies);
     }
+
 
     @Override
     public Class<? extends LocationMessage> getLocationType() {
