@@ -15,8 +15,8 @@ public class DeviceConstants {
     public static final int ALARM_MOVING_ID = 99;
 
 
-
-
+    public static final int IGN_KEY_OFF_ALARM_ID = 13;
+    public static final int IGN_KEY_ON_ALARM_ID = 12;
 
 
 }

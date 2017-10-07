@@ -2,10 +2,9 @@ package com.openvehicletracking.device.xtakip;
 
 
 import com.google.gson.JsonObject;
-import com.openvehicletracking.core.Device;
-import com.openvehicletracking.core.DeviceState;
-import com.openvehicletracking.core.ResponseAdapter;
+import com.openvehicletracking.core.*;
 import com.openvehicletracking.core.alarm.Alarm;
+import com.openvehicletracking.core.exception.UnsupportedMessageTypeException;
 import com.openvehicletracking.core.geojson.GeoJsonResponse;
 import com.openvehicletracking.core.message.*;
 import com.openvehicletracking.core.message.exception.UnsupportedReplyTypeException;
@@ -18,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -90,8 +90,48 @@ public class XTakip implements Device {
     }
 
     @Override
-    public DeviceState createStateFromMessage(Message message) {
-        return null;
+    public DeviceState createStateFromMessage(Message message) throws UnsupportedMessageTypeException {
+        if (message.getClass() != getLocationType()) {
+            throw new UnsupportedMessageTypeException("Message type should be " + getLocationType().getCanonicalName());
+        }
+
+
+        LProtocolMessage lProtocolMessage = (LProtocolMessage) message;
+        if (lProtocolMessage.getStatus() == GpsStatus.NO_DATA) {
+            return null;
+        }
+
+        Boolean ignKeyOff = lProtocolMessage.getDeviceState().getIgnitiKeyOff();
+
+        DeviceState state = new DeviceState();
+        state.setDeviceId(lProtocolMessage.getDeviceId());
+        state.setDistance(lProtocolMessage.getDistance());
+        state.setCreatedAt(new Date().getTime());
+        state.setUpdatedAt(new Date().getTime());
+        state.setDeviceDate(lProtocolMessage.getDatetime());
+        state.setLatitude(lProtocolMessage.getLatitude());
+        state.setLongitude(lProtocolMessage.getLongitude());
+        state.setDirection(lProtocolMessage.getDirection());
+        state.setIgnitionKeyOff(ignKeyOff);
+        state.setInvalidDeviceDate(lProtocolMessage.getDeviceState().getInvalidRTC());
+        state.setGpsStatus(lProtocolMessage.getStatus());
+
+        switch (lProtocolMessage.getAlarm()) {
+            case DeviceConstants.IGN_KEY_OFF_ALARM_ID:
+                state.setDeviceStatus(DeviceStatus.PARKED);
+                break;
+            case DeviceConstants.IGN_KEY_ON_ALARM_ID:
+                state.setDeviceStatus(DeviceStatus.MOVING);
+                break;
+            default:
+                if (ignKeyOff != null) {
+                    state.setDeviceStatus((ignKeyOff ? DeviceStatus.PARKED : DeviceStatus.MOVING));
+                } else {
+                    state.setDeviceStatus(DeviceStatus.CONNECTION_LOST);
+                }
+        }
+
+        return state;
     }
 
     @Override

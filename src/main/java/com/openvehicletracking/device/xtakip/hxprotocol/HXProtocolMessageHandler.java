@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
  * Created by oksuz on 20/05/2017.
  *
  */
-public class HXProtocolMessageHandler implements MessageHandler<String> {
+public class HXProtocolMessageHandler implements MessageHandler {
 
     @Override
     public Pattern pattern() {
