@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 /**
  * Created by oksuz on 20/05/2017.
  */
-public class OXProtocolMessageHandler implements MessageHandler<String> {
+public class OXProtocolMessageHandler implements MessageHandler {
 
     @Override
     public Pattern pattern() {
