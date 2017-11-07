@@ -115,6 +115,7 @@ public class XTakip implements Device {
         state.setIgnitionKeyOff(ignKeyOff);
         state.setInvalidDeviceDate(lProtocolMessage.getDeviceState().getInvalidRTC());
         state.setGpsStatus(lProtocolMessage.getStatus());
+        state.setSpeed(lProtocolMessage.getSpeed());
 
         switch (lProtocolMessage.getAlarm()) {
             case DeviceConstants.IGN_KEY_OFF_ALARM_ID:
