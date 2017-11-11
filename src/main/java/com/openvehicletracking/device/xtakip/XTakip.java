@@ -112,8 +112,8 @@ public class XTakip implements Device {
         state.setLatitude(lProtocolMessage.getLatitude());
         state.setLongitude(lProtocolMessage.getLongitude());
         state.setDirection(lProtocolMessage.getDirection());
-        state.setIgnitionKeyOff(ignKeyOff);
-        state.setInvalidDeviceDate(lProtocolMessage.getDeviceState().getInvalidRTC());
+        state.setIgnitionKeyOff(ignKeyOff == Boolean.TRUE);
+        state.setInvalidDeviceDate(lProtocolMessage.getDeviceState().getInvalidRTC() == Boolean.TRUE);
         state.setGpsStatus(lProtocolMessage.getStatus());
         state.setSpeed(lProtocolMessage.getSpeed());
 
@@ -125,8 +125,8 @@ public class XTakip implements Device {
                 state.setDeviceStatus(DeviceStatus.MOVING);
                 break;
             default:
-                if (ignKeyOff != null) {
-                    state.setDeviceStatus((ignKeyOff ? DeviceStatus.PARKED : DeviceStatus.MOVING));
+                if (lProtocolMessage.getSpeed() != 0 || ignKeyOff != null) {
+                    state.setDeviceStatus((ignKeyOff == Boolean.TRUE ? DeviceStatus.PARKED : DeviceStatus.MOVING));
                 } else {
                     state.setDeviceStatus(DeviceStatus.CONNECTION_LOST);
                 }
