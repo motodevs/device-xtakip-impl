@@ -87,7 +87,7 @@ public class LProtocolParser implements Parser {
         p.setDeviceState(status);
         p.setSpeed(speed);
         p.setDistance(distance);
-        p.setAlarm(alarm);
+        p.setAlert(alarm);
         p.setDirection(direction);
         p.setAdditional(additional);
         try {

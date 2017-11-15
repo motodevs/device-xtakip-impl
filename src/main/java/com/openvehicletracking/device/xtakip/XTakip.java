@@ -3,7 +3,7 @@ package com.openvehicletracking.device.xtakip;
 
 import com.google.gson.JsonObject;
 import com.openvehicletracking.core.*;
-import com.openvehicletracking.core.alarm.Alarm;
+import com.openvehicletracking.core.alert.Alert;
 import com.openvehicletracking.core.exception.UnsupportedMessageTypeException;
 import com.openvehicletracking.core.geojson.GeoJsonResponse;
 import com.openvehicletracking.core.message.*;
@@ -33,11 +33,11 @@ public class XTakip implements Device {
     private static final Logger LOGGER = LoggerFactory.getLogger(XTakip.class);
 
     private final CopyOnWriteArrayList<MessageHandler> messageHandlers = new CopyOnWriteArrayList<>();
-    private final ConcurrentHashMap<Integer, XtakipAlarm> alarms = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, XtakipAlert> alerts = new ConcurrentHashMap<>();
 
     public XTakip() {
         messageHandlers.addAll(Arrays.asList(new LProtocolMessageHandler(), new HXProtocolMessageHandler(), new OXProtocolMessageHandler()));
-        alarms.putAll(Alarms.getAll());
+        alerts.putAll(Alarms.getAll());
         LOGGER.info("device {} initialized", NAME);
     }
 
@@ -52,20 +52,20 @@ public class XTakip implements Device {
     }
 
     @Override
-    public Alarm generateAlarmFromMessage(Message message) {
+    public Alert generateAlertFromMessage(Message message) {
         if (message.getClass() != getLocationType()) {
             return null;
         }
 
         LProtocolMessage lProtocolMessage = (LProtocolMessage) message;
-        if (alarms.containsKey(lProtocolMessage.getAlarm())) {
-            XtakipAlarm alarm = alarms.get(lProtocolMessage.getAlarm());
+        if (alerts.containsKey(lProtocolMessage.getAlert())) {
+            XtakipAlert alert = alerts.get(lProtocolMessage.getAlert());
 
             JsonObject extra = new JsonObject();
-            extra.addProperty("xTakipAlarmId", lProtocolMessage.getAlarm());
+            extra.addProperty("xTakipAlertId", lProtocolMessage.getAlert());
             extra.addProperty("distance", lProtocolMessage.getDistance());
 
-            Alarm deviceAlarm = new Alarm(lProtocolMessage.getDeviceId(), alarm.getDescription(), alarm.getActions(), lProtocolMessage.getDatetime(), extra);
+            Alert deviceAlarm = new Alert(lProtocolMessage.getDeviceId(), alert.getDescription(), alert.getActions(), lProtocolMessage.getDatetime(), extra);
             LOGGER.info("device alarm created {}", deviceAlarm);
             return deviceAlarm;
         }
@@ -117,7 +117,7 @@ public class XTakip implements Device {
         state.setGpsStatus(lProtocolMessage.getStatus());
         state.setSpeed(lProtocolMessage.getSpeed());
 
-        switch (lProtocolMessage.getAlarm()) {
+        switch (lProtocolMessage.getAlert()) {
             case DeviceConstants.IGN_KEY_OFF_ALARM_ID:
                 state.setDeviceStatus(DeviceStatus.PARKED);
                 break;

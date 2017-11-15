@@ -1,8 +1,10 @@
 package com.openvehicletracking.device.xtakip.lprotocol;
 
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.openvehicletracking.core.GpsStatus;
+import com.openvehicletracking.core.GsonFactory;
 import com.openvehicletracking.core.message.LocationMessage;
 import com.openvehicletracking.device.xtakip.DeviceConstants;
 import com.openvehicletracking.device.xtakip.XTakip;
@@ -28,7 +30,7 @@ public class LProtocolMessage implements LocationMessage {
     private String deviceId;
 
     // device
-    private int alarm;
+    private int alert;
     private XTakipStatus deviceState;
     private double distance;
     private String additional;
@@ -38,6 +40,17 @@ public class LProtocolMessage implements LocationMessage {
     private final String device = XTakip.NAME;
     private final String type = DeviceConstants.MESSAGE_TYPE_L;
 
+    private final transient Gson gson = GsonFactory.newGson();
+
+    @Override
+    public LProtocolMessage fromJsonString(String json) {
+        return gson.fromJson(json, this.getClass());
+    }
+
+    @Override
+    public String asJsonString() {
+        return gson.toJson(this);
+    }
     @Override
     public double getLatitude() {
         return latitude;
@@ -98,8 +111,8 @@ public class LProtocolMessage implements LocationMessage {
         return Optional.empty();
     }
 
-    public int getAlarm() {
-        return alarm;
+    public int getAlert() {
+        return alert;
     }
 
     public XTakipStatus getDeviceState() {
@@ -148,8 +161,8 @@ public class LProtocolMessage implements LocationMessage {
         this.deviceId = deviceId;
     }
 
-    public void setAlarm(int alarm) {
-        this.alarm = alarm;
+    public void setAlert(int alert) {
+        this.alert = alert;
     }
 
     public void setDeviceState(XTakipStatus deviceState) {
