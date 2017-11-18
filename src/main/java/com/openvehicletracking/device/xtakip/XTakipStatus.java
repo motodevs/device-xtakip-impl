@@ -1,6 +1,5 @@
 package com.openvehicletracking.device.xtakip;
 
-import com.google.gson.Gson;
 import com.openvehicletracking.core.GsonFactory;
 import com.openvehicletracking.core.JsonDeserializeable;
 import com.openvehicletracking.core.JsonSerializeable;
@@ -9,8 +8,6 @@ import com.openvehicletracking.core.JsonSerializeable;
  * Created by yo on 08/06/2017.
  */
 public class XTakipStatus implements JsonSerializeable, JsonDeserializeable<XTakipStatus> {
-
-    private final transient Gson gson = GsonFactory.newGson();
 
     private String raw;
     private Boolean input1Active;
@@ -37,12 +34,12 @@ public class XTakipStatus implements JsonSerializeable, JsonDeserializeable<XTak
 
     @Override
     public XTakipStatus fromJsonString(String json) {
-        return gson.fromJson(json, this.getClass());
+        return GsonFactory.getGson().fromJson(json, this.getClass());
     }
 
     @Override
     public String asJsonString() {
-        return gson.toJson(this);
+        return GsonFactory.getGson().toJson(this);
     }
 
     public Boolean getInput1Active() {

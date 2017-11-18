@@ -1,7 +1,6 @@
 package com.openvehicletracking.device.xtakip.lprotocol;
 
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.openvehicletracking.core.GpsStatus;
 import com.openvehicletracking.core.GsonFactory;
@@ -40,16 +39,15 @@ public class LProtocolMessage implements LocationMessage {
     private final String device = XTakip.NAME;
     private final String type = DeviceConstants.MESSAGE_TYPE_L;
 
-    private final transient Gson gson = GsonFactory.newGson();
 
     @Override
     public LProtocolMessage fromJsonString(String json) {
-        return gson.fromJson(json, this.getClass());
+        return GsonFactory.getGson().fromJson(json, this.getClass());
     }
 
     @Override
     public String asJsonString() {
-        return gson.toJson(this);
+        return GsonFactory.getGson().toJson(this);
     }
     @Override
     public double getLatitude() {
