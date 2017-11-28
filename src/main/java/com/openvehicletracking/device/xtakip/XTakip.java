@@ -101,10 +101,6 @@ public class XTakip implements Device {
             return null;
         }
 
-        if (lProtocolMessage.getDeviceState().getOfflineRecord() == Boolean.TRUE) {
-            return null;
-        }
-
         Boolean ignKeyOff = lProtocolMessage.getDeviceState().getIgnitiKeyOff();
 
         DeviceState state = new DeviceState();
