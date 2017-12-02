@@ -15,12 +15,6 @@ public final class HXProtocolMessage extends AbstractCommandMessage {
         return false;
     }
 
-
-    @Override
-    public HXProtocolMessage fromJsonString(String json) {
-        return GsonFactory.getGson().fromJson(json, this.getClass());
-    }
-
     @Override
     public String asJsonString() {
         return GsonFactory.getGson().toJson(this);

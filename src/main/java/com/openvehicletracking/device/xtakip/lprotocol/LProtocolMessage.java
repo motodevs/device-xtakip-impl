@@ -41,11 +41,6 @@ public class LProtocolMessage implements LocationMessage {
 
 
     @Override
-    public LProtocolMessage fromJsonString(String json) {
-        return GsonFactory.getGson().fromJson(json, this.getClass());
-    }
-
-    @Override
     public String asJsonString() {
         return GsonFactory.getGson().toJson(this);
     }

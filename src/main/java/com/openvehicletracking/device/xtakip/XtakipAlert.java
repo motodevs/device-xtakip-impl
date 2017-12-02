@@ -1,7 +1,6 @@
 package com.openvehicletracking.device.xtakip;
 
 
-import com.openvehicletracking.core.JsonDeserializeable;
 import com.openvehicletracking.core.JsonSerializeable;
 import com.openvehicletracking.core.alert.AlertAction;
 
@@ -10,7 +9,7 @@ import java.util.List;
 /**
  * Created by yo on 08/06/2017.
  */
-public class XtakipAlert implements JsonDeserializeable<XtakipAlert>, JsonSerializeable {
+public class XtakipAlert implements JsonSerializeable {
 
     private int id;
     private String description;
@@ -20,11 +19,6 @@ public class XtakipAlert implements JsonDeserializeable<XtakipAlert>, JsonSerial
         this.id = id;
         this.description = description;
         this.actions = actions;
-    }
-
-    @Override
-    public XtakipAlert fromJsonString(String json) {
-        return null;
     }
 
     @Override
