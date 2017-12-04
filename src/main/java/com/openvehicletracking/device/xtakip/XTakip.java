@@ -101,13 +101,19 @@ public class XTakip implements Device {
             return null;
         }
 
+        Boolean isOfflineRecord = lProtocolMessage.getDeviceState().getOfflineRecord();
+        if (isOfflineRecord == Boolean.TRUE) {
+            return null;
+        }
+
         Boolean ignKeyOff = lProtocolMessage.getDeviceState().getIgnitiKeyOff();
 
+        Date now = new Date();
         DeviceState state = new DeviceState();
         state.setDeviceId(lProtocolMessage.getDeviceId());
         state.setDistance(lProtocolMessage.getDistance());
-        state.setCreatedAt(new Date().getTime());
-        state.setUpdatedAt(new Date().getTime());
+        state.setCreatedAt(now.getTime());
+        state.setUpdatedAt(now.getTime());
         state.setDeviceDate(lProtocolMessage.getDatetime());
         state.setLatitude(lProtocolMessage.getLatitude());
         state.setLongitude(lProtocolMessage.getLongitude());
