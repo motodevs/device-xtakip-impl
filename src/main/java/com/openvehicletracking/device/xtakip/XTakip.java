@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.openvehicletracking.core.*;
 import com.openvehicletracking.core.alert.Alert;
 import com.openvehicletracking.core.exception.UnsupportedMessageTypeException;
-import com.openvehicletracking.core.geojson.GeoJsonResponse;
+import com.openvehicletracking.core.geojson.*;
 import com.openvehicletracking.core.message.*;
 import com.openvehicletracking.core.message.exception.UnsupportedReplyTypeException;
 import com.openvehicletracking.core.message.impl.ReplyImpl;
@@ -16,9 +16,7 @@ import com.openvehicletracking.device.xtakip.oxprotocol.OXProtocolMessageHandler
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
@@ -143,7 +141,28 @@ public class XTakip implements Device {
 
     @Override
     public GeoJsonResponse responseAsGeoJson(List<? extends LocationMessage> messages) {
-        return null;
+        LineStringGeometry lineStringGeometry = new LineStringGeometry();
+        PointGeometry endPoint = new PointGeometry();
+        PointGeometry startPoint = new PointGeometry();
+        LocationMessage firstMessage = messages.get(messages.size() - 1);
+        LocationMessage lastMessage = messages.get(0);
+
+        List<GeoJsonProperty> properties = new ArrayList<>();
+
+        messages.forEach(m -> lineStringGeometry.addPoint(new Point(m.getLatitude(), m.getLongitude())));
+
+        startPoint.addProperty(new GeoJsonProperty("start-point.png", "markerIcon"));
+        startPoint.addPoint(new Point(firstMessage.getLatitude(), firstMessage.getLongitude()));
+
+        endPoint.addPoint(new Point(lastMessage.getLatitude(), lastMessage.getLongitude()));
+        endPoint.addProperty(new GeoJsonProperty("end-point.png", "markerIcon"));
+
+
+        GeoJsonResponse geoJsonResponse = new GeoJsonResponse();
+        geoJsonResponse.addFeature(new Feature(properties, lineStringGeometry));
+        geoJsonResponse.addFeature(new Feature(null, endPoint));
+        geoJsonResponse.addFeature(new Feature(null, startPoint));
+        return geoJsonResponse;
     }
 
     @Override
