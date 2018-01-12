@@ -1,5 +1,5 @@
-group 'com.openvehicletracking.device'
-version '1.5.4-SNAPSHOT'
+group 'com.openvehicletracking'
+version '2.0.0-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'idea'
@@ -39,7 +39,7 @@ signing {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
-    compile 'com.openvehicletracking:openvehicletracking-core:1.5.2-SNAPSHOT'
+    compile 'com.openvehicletracking:core:2.0.0-SNAPSHOT'
 }
 
 uploadArchives {

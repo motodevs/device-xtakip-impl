@@ -1,10 +1,9 @@
-package com.openvehicletracking.device.xtakip.hxprotocol;
+package com.openvehicletracking.protocols.xtakip.hxprotocol;
 
-
-import com.google.gson.JsonArray;
-import com.openvehicletracking.core.message.Parser;
+import com.openvehicletracking.core.protocol.Parser;
 
 import java.util.Date;
+import java.util.HashMap;
 
 /**
  * Created by oksuz on 20/05/2017.
@@ -23,17 +22,17 @@ public class HXProtocolParser implements Parser {
         message = message.replace("!", "").replace("@", "");
         String[] splittedMsg = message.split(";");
 
-        JsonArray extraParameters = new JsonArray();
-        extraParameters.add(splittedMsg[2]);
-        extraParameters.add(splittedMsg[3]);
-        extraParameters.add(splittedMsg[4]);
-        extraParameters.add(splittedMsg[5]);
+        HashMap<String, Object> extraParameters = new HashMap<>();
+        extraParameters.put("param1", splittedMsg[2]);
+        extraParameters.put("param2", splittedMsg[3]);
+        extraParameters.put("param3", splittedMsg[4]);
+        extraParameters.put("param4", splittedMsg[5]);
 
         HXProtocolMessage m = new HXProtocolMessage();
         m.setDeviceId(splittedMsg[1]);
         m.setRequestId(splittedMsg[6]);
-        m.setExtraParameters(extraParameters);
-        m.setDatetime(new Date().getTime());
+        m.setAttributes(extraParameters);
+        m.setDatetime(new Date());
 
         return m;
     }

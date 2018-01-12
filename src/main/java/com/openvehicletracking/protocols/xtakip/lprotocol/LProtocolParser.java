@@ -1,10 +1,11 @@
-package com.openvehicletracking.device.xtakip.lprotocol;
+package com.openvehicletracking.protocols.xtakip.lprotocol;
 
 
-import com.openvehicletracking.device.xtakip.ConversionHelper;
-import com.openvehicletracking.device.xtakip.XTakipStatus;
+import com.openvehicletracking.core.protocol.Parser;
+import com.openvehicletracking.protocols.xtakip.ConversionHelper;
+import com.openvehicletracking.protocols.xtakip.XTakipConstants;
 import com.openvehicletracking.core.GpsStatus;
-import com.openvehicletracking.core.message.Parser;
+
 
 import java.math.BigInteger;
 import java.text.ParseException;
@@ -20,8 +21,8 @@ public class LProtocolParser implements Parser {
     private SimpleDateFormat format;
     private String message;
 
-    public LProtocolParser(String message) {
-        this.message = message;
+    public LProtocolParser(Object message) {
+        this.message = (String) message;
         format = new SimpleDateFormat("ddMMyyHHmmss");
         format.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
@@ -31,7 +32,7 @@ public class LProtocolParser implements Parser {
     }
 
     public LProtocolMessage parse() {
-        LProtocolMessage p = new LProtocolMessage();
+        LProtocolMessage.LProtocolMessageBuilder messageBuilder = new LProtocolMessage.LProtocolMessageBuilder();
         String message = getMessage();
 
         message = message.substring(2, message.length() - 1);
@@ -63,7 +64,7 @@ public class LProtocolParser implements Parser {
         double longitude = ConversionHelper.convertLongitude(message.substring(0, 9));
         message = message.substring(9);
 
-        XTakipStatus status = parseState(message.substring(0, 8));
+        createAttributes(message.substring(0, 8), messageBuilder);
         message = message.substring(8);
 
         double speed = ConversionHelper.knotToKm(message.substring(0, 4));
@@ -80,29 +81,27 @@ public class LProtocolParser implements Parser {
 
         String additional = message;
 
-        p.setRawMessage(getMessage());
-        p.setDeviceId(deviceId);
-        p.setStatus(gpsStatus);
-        p.setLatitude(latitude);
-        p.setLongitude(longitude);
-        p.setDeviceState(status);
-        p.setSpeed(speed);
-        p.setDistance(distance);
-        p.setAlert(alarm);
-        p.setDirection(direction);
-        p.setAdditional(additional);
+        messageBuilder.setDeviceId(deviceId);
+        messageBuilder.setStatus(gpsStatus);
+        messageBuilder.setLatitude(latitude);
+        messageBuilder.setLongitude(longitude);
+        messageBuilder.setRawMessage(getMessage());
+        messageBuilder.setAlert(alarm);
+        messageBuilder.setDistance(distance);
+        messageBuilder.setSpeed(speed);
+        messageBuilder.setDirection(direction);
+
+
         try {
-            p.setDatetime(format.parse(dateTime).getTime());
+            messageBuilder.setDatetime(format.parse(dateTime));
         } catch (ParseException e) {
-            p.setDatetime(new Date().getTime());
+            messageBuilder.setDatetime(new Date());
         }
 
-        return p;
+        return messageBuilder.build();
     }
 
-    public XTakipStatus parseState(String raw) {
-        XTakipStatus status = new XTakipStatus();
-        status.setRaw(raw);
+    public void createAttributes(String raw, LProtocolMessage.LProtocolMessageBuilder builder) {
         String bits = new BigInteger(raw, 16).toString(2);
         bits = new StringBuilder(bits).reverse().toString();
         byte[] bytes = bits.getBytes();
@@ -111,74 +110,49 @@ public class LProtocolParser implements Parser {
         for (int i = 0; i < bytes.length; i++) {
             switch (i) {
                 case 0:
-                    status.setInput1Active(bytes[i] == t);
+                    builder.addAttribute(XTakipConstants.ATTR_INPUT_1_ACTIVE, bytes[i] == t);
                     break;
                 case 1:
-                    status.setInput2Active(bytes[i] == t);
+                    builder.addAttribute(XTakipConstants.ATTR_INPUT_2_ACTIVE, bytes[i] == t);
                     break;
                 case 2:
-                    status.setInput3Active(bytes[i] == t);
+                    builder.addAttribute(XTakipConstants.ATTR_INPUT_3_ACTIVE, bytes[i] == t);
                     break;
                 case 3:
-                    status.setIgnitiKeyOff(bytes[i] == t);
+                    builder.addAttribute(XTakipConstants.ATTR_IS_IGNITION_KEY_OFF, bytes[i] == t);
                     break;
                 case 4:
-                    status.setBatteryCutted(bytes[i] == t);
+                    builder.addAttribute(XTakipConstants.ATTR_IS_BATTERY_CUT, bytes[i] == t);
                     break;
                 case 5:
-                    status.setOutput1Active(bytes[i] == t);
+                    builder.addAttribute(XTakipConstants.ATTR_OUTPUT_1_ACTIVE, bytes[i] == t);
                     break;
                 case 6:
-                    status.setOutput2Active(bytes[i] == t);
+                    builder.addAttribute(XTakipConstants.ATTR_OUTPUT_2_ACTIVE, bytes[i] == t);
                     break;
                 case 7:
-                    status.setOutput3Active(bytes[i] == t);
+                    builder.addAttribute(XTakipConstants.ATTR_OUTPUT_3_ACTIVE, bytes[i] == t);
                     break;
                 case 8:
-                    status.setOutOfTempLimit(bytes[i] == t);
+                    builder.addAttribute(XTakipConstants.ATTR_OUT_OF_TEMP_LIMIT, bytes[i] == t);
                     break;
                 case 9:
-                    status.setOutOfSpeedLimit(bytes[i] == t);
+                    builder.addAttribute(XTakipConstants.ATTR_OUT_OF_SPEED_LIMIT, bytes[i] == t);
                     break;
                 case 10:
-                    status.setGprsOpendOnOversea(bytes[i] == t);
+                    builder.addAttribute(XTakipConstants.ATTR_GPRS_OPENED_OVERSEA, bytes[i] == t);
                     break;
                 case 11:
-                    status.setDeltaDistinaceOpened(bytes[i] == t);
+                    builder.addAttribute(XTakipConstants.ATTR_DELTA_DISTANCE_OPENED, bytes[i] == t);
                     break;
                 case 12:
-                    status.setOfflineRecord(bytes[i] == t);
+                    builder.addAttribute(XTakipConstants.ATTR_IS_OFFLINE_RECORD, bytes[i] == t);
                     break;
                 case 13:
-                    status.setInvalidRTC(bytes[i] == t);
+                    builder.addAttribute(XTakipConstants.ATTR_IS_INVALID_RTC, bytes[i] == t);
                     break;
-                case 14:
-                    status.setEngineStopActive(bytes[i] == t);
-                    break;
-                case 15:
-                    status.setMaxStopResuming(bytes[i] == t);
-                    break;
-                case 16:
-                    status.setIdleStatusResuming(bytes[i] == t);
-                    break;
-                case 17:
-                    status.setgSensorAlarmResuming(bytes[i] == t);
-                    break;
-                case 18:
-                    status.setInput4Active(bytes[i] == t);
-                    break;
-                case 19:
-                    status.setInput5Active(bytes[i] == t);
-                    break;
-                case 20:
-                    status.setExternalPowerCut(bytes[i] == t);
-                    break;
-
             }
         }
-
-
-        return status;
     }
 
 }

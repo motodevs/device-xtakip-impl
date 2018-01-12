@@ -1,4 +1,4 @@
-package com.openvehicletracking.device.xtakip.lprotocol;
+package com.openvehicletracking.protocols.xtakip.lprotocol;
 
 import com.openvehicletracking.core.message.LocationMessage;
 import org.junit.Assert;

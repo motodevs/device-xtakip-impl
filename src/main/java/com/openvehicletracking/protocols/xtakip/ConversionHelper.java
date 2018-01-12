@@ -1,4 +1,4 @@
-package com.openvehicletracking.device.xtakip;
+package com.openvehicletracking.protocols.xtakip;
 
 /**
  * Created by oksuz on 04/02/2017.
