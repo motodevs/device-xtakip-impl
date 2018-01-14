@@ -2,6 +2,7 @@ package com.openvehicletracking.protocols.xtakip;
 
 import com.openvehicletracking.core.ConnectionHolder;
 import com.openvehicletracking.core.Device;
+import com.openvehicletracking.core.Reply;
 import com.openvehicletracking.core.json.GsonFactory;
 import com.openvehicletracking.core.protocol.Command;
 
@@ -17,7 +18,6 @@ abstract public class BaseCommandMessage implements Command {
     private long datetime;
 
     private HashMap<String, Object> attributes = new HashMap<>();
-
 
     public void setRaw(String raw) {
         this.raw = raw;
@@ -70,7 +70,7 @@ abstract public class BaseCommandMessage implements Command {
     }
 
     @Override
-    public <T> void reply(ConnectionHolder<T> connectionHolder) {
+    public void reply(Reply reply) {
 
     }
 

@@ -10,9 +10,10 @@ import com.openvehicletracking.core.*;
 public class XTakip implements Device {
 
     public static final String NAME = "xtakip";
-
     private String deviceId;
     private DeviceState state;
+    private transient ConnectionHolder<?> connectionHolder;
+
     public XTakip(String deviceId) {
         this.deviceId = deviceId;
     }
@@ -30,6 +31,16 @@ public class XTakip implements Device {
     @Override
     public DeviceState getState() {
         return state;
+    }
+
+    @Override
+    public void addConnection(ConnectionHolder<?> connectionHolder) {
+        this.connectionHolder = connectionHolder;
+    }
+
+    @Override
+    public ConnectionHolder<?> getConnection() {
+        return connectionHolder;
     }
 
     public void setState(DeviceState state) {

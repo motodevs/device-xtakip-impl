@@ -1,8 +1,11 @@
 package com.openvehicletracking.protocols.xtakip.hxprotocol;
 
 
+import com.openvehicletracking.core.ConnectionHolder;
 import com.openvehicletracking.core.protocol.Message;
 import com.openvehicletracking.core.protocol.MessageHandler;
+import com.openvehicletracking.protocols.xtakip.BaseMessageHandler;
+import com.openvehicletracking.protocols.xtakip.oxprotocol.OXProtocolParser;
 
 import java.util.regex.Pattern;
 
@@ -10,21 +13,22 @@ import java.util.regex.Pattern;
  * Created by oksuz on 20/05/2017.
  *
  */
-public class HXProtocolMessageHandler implements MessageHandler {
+public class HXProtocolMessageHandler extends BaseMessageHandler {
 
     @Override
-    public boolean isMatch(Object msg) {
-        if (msg != null) {
-            String message = (String) msg;
-            return Pattern.compile("^@HX;\\d+;.*;.*;.*;.*;.*!$").matcher(message).matches();
+    protected Message handle(String msg, ConnectionHolder<?> connectionHolder) {
+        Message message = new HXProtocolParser(msg).parse();
+        if (message != null) {
+            message.getDevice().addConnection(connectionHolder);
+            return message;
         }
 
-        return false;
+        return null;
     }
 
     @Override
-    public Message handle(Object msg) {
-        return new HXProtocolParser((String) msg).parse();
+    public boolean isMatch(Object msg) {
+        return isMatch(convertToString(msg), "^@HX;\\d+;.*;.*;.*;.*;.*!$");
     }
 
 }

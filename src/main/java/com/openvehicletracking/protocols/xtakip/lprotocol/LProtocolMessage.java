@@ -137,7 +137,7 @@ public class LProtocolMessage implements LocationMessage {
     }
 
     @Override
-    public <T> void reply(ConnectionHolder<T> connectionHolder) {
+    public void reply(Reply reply) {
 
     }
 
@@ -146,7 +146,7 @@ public class LProtocolMessage implements LocationMessage {
         return GsonFactory.getGson().toJson(this);
     }
 
-    public static class LProtocolMessageBuilder {
+    public  static class LProtocolMessageBuilder {
         private double latitude;
         private double longitude;
         private double speed;
