@@ -3,12 +3,12 @@ package com.openvehicletracking.protocols.xtakip.lprotocol;
 
 import com.openvehicletracking.core.ConnectionHolder;
 import com.openvehicletracking.core.protocol.Message;
-import com.openvehicletracking.protocols.xtakip.BaseMessageHandler;
+import com.openvehicletracking.protocols.xtakip.XTakipBaseMessageHandler;
 
 /**
  * Created by oksuz on 19/05/2017.
  */
-public class LProtocolMessageHandler extends BaseMessageHandler {
+public class LProtocolMessageHandler extends XTakipBaseMessageHandler {
 
     @Override
     public boolean isMatch(Object msg) {

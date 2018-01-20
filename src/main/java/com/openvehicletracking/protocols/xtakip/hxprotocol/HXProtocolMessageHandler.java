@@ -3,17 +3,15 @@ package com.openvehicletracking.protocols.xtakip.hxprotocol;
 
 import com.openvehicletracking.core.ConnectionHolder;
 import com.openvehicletracking.core.protocol.Message;
-import com.openvehicletracking.core.protocol.MessageHandler;
-import com.openvehicletracking.protocols.xtakip.BaseMessageHandler;
-import com.openvehicletracking.protocols.xtakip.oxprotocol.OXProtocolParser;
+import com.openvehicletracking.protocols.xtakip.XTakipBaseMessageHandler;
 
-import java.util.regex.Pattern;
+import java.nio.ByteBuffer;
 
 /**
  * Created by oksuz on 20/05/2017.
  *
  */
-public class HXProtocolMessageHandler extends BaseMessageHandler {
+public class HXProtocolMessageHandler extends XTakipBaseMessageHandler {
 
     @Override
     protected Message handle(String msg, ConnectionHolder<?> connectionHolder) {

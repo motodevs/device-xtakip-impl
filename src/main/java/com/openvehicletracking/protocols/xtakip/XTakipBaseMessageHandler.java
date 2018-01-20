@@ -2,12 +2,12 @@ package com.openvehicletracking.protocols.xtakip;
 
 import com.openvehicletracking.core.ConnectionHolder;
 import com.openvehicletracking.core.protocol.Message;
-import com.openvehicletracking.core.protocol.MessageHandler;
+import com.openvehicletracking.protocols.BaseMessageHandler;
 
 import javax.annotation.Nullable;
 import java.util.regex.Pattern;
 
-public abstract class BaseMessageHandler implements MessageHandler {
+abstract public class XTakipBaseMessageHandler extends BaseMessageHandler {
 
     protected abstract Message handle(String msg, ConnectionHolder<?> connectionHolder);
 
@@ -25,12 +25,4 @@ public abstract class BaseMessageHandler implements MessageHandler {
         return null;
     }
 
-    @Nullable
-    protected String convertToString(Object msg) {
-        if (msg instanceof byte[]) {
-            return new String((byte[]) msg);
-        }
-
-        return null;
-    }
 }

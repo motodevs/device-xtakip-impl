@@ -2,7 +2,7 @@ package com.openvehicletracking.protocols.xtakip.lprotocol;
 
 
 import com.openvehicletracking.core.protocol.Parser;
-import com.openvehicletracking.protocols.xtakip.ConversionHelper;
+import com.openvehicletracking.protocols.ConversionHelper;
 import com.openvehicletracking.protocols.xtakip.XTakipConstants;
 import com.openvehicletracking.core.GpsStatus;
 
