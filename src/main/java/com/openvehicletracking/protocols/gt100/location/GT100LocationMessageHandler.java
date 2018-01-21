@@ -3,19 +3,17 @@ package com.openvehicletracking.protocols.gt100.location;
 
 import com.openvehicletracking.core.ConnectionHolder;
 import com.openvehicletracking.core.protocol.Message;
-import com.openvehicletracking.core.protocol.Parser;
 import com.openvehicletracking.protocols.gt100.GT100BaseMessageHandler;
 
 import java.nio.ByteBuffer;
 
-public class Gt100LocationMessageHandler extends GT100BaseMessageHandler {
+public class GT100LocationMessageHandler extends GT100BaseMessageHandler {
 
     @Override
     protected Message handle(ByteBuffer msg, ConnectionHolder<?> connectionHolder) {
-        Parser parser = new GT100LocationMessageParser(msg);
-        Gt100LocationMessage message = (Gt100LocationMessage) parser.parse();
-
-
+        GT100LocationMessageParser parser = new GT100LocationMessageParser(msg);
+        GT100LocationMessage message = (GT100LocationMessage) parser.parse();
+        message.getDevice().addConnection(connectionHolder);
         return message;
     }
 

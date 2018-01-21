@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class XTakipProtocol implements MessagingProtocol {
 
-    ArrayList<MessageHandler> handlers = new ArrayList<>();
+    private ArrayList<MessageHandler> handlers = new ArrayList<>();
 
     public XTakipProtocol() {
         handlers.add(new LProtocolMessageHandler());
@@ -21,7 +21,7 @@ public class XTakipProtocol implements MessagingProtocol {
 
     @Override
     public String getName() {
-        return XTakip.NAME;
+        return XTakip.class.getName();
     }
 
     @Override

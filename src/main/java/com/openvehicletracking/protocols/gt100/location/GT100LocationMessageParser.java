@@ -1,27 +1,23 @@
 package com.openvehicletracking.protocols.gt100.location;
 
+import com.openvehicletracking.core.*;
 import com.openvehicletracking.core.protocol.Message;
-import com.openvehicletracking.core.protocol.Parser;
-import com.openvehicletracking.protocols.gt100.CellTower;
-import com.openvehicletracking.protocols.gt100.CourseAndStatus;
+import com.openvehicletracking.protocols.gt100.GT100BaseMessageParser;
+import com.openvehicletracking.protocols.gt100.GpsDataUploadMode;
+import com.openvehicletracking.protocols.gt100.GT100Device;
+
 
 import java.nio.ByteBuffer;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
 
-public class GT100LocationMessageParser implements Parser {
+public class GT100LocationMessageParser extends GT100BaseMessageParser {
 
-    private final ByteBuffer message;
 
     public GT100LocationMessageParser(ByteBuffer msg) {
-        message = msg;
+        super(msg);
     }
 
     @Override
     public Message parse() {
-        Gt100LocationMessage locationMessage = new Gt100LocationMessage();
         byte[] datetime = new byte[6];
         byte[] cellTowerId = new byte[3];
 
@@ -39,37 +35,39 @@ public class GT100LocationMessageParser implements Parser {
         short locationAreaCode = message.getShort();
         message.get(cellTowerId);
         boolean ignKeyOn = message.get() == 0x1;
-        byte gpsDataUploadMode = message.get();
-        byte gpsRealTimeUpload = message.get();
+        GpsDataUploadMode gpsDataUploadMode = GpsDataUploadMode.createFrom(message.get());
+        boolean gpsRealTimeUpload = message.get() == 0x1;
         short infoSerialNumber = message.getShort();
         short errorCheck = message.getShort();
         short end = message.getShort();
 
-        Date messageDate = parseDate(datetime);
-        int numberOfSatellites = getNumberOfSatellites(gpsInfo);
-        CourseAndStatus course = CourseAndStatus.fromShort(courseAndStatus);
-        CellTower cellTower = new CellTower(mobileCountryCode, mobileNetworkCode, locationAreaCode, cellTowerId);
-        return locationMessage;
+        Position position = new Position();
+        position.setCellTower(new CellTower(mobileCountryCode, mobileNetworkCode, locationAreaCode, createCellTowerId(cellTowerId)));
+        position.setCourseAndStatus(CourseAndStatus.fromShort(courseAndStatus));
+        position.setLongitude(longitude);
+        position.setLatitude(latitude);
+        position.setSpeed(speed);
+        position.setDirection(CourseAndStatus.fromShort(courseAndStatus).getCourse());
+
+        GT100LocationMessageBuilder builder = new GT100LocationMessageBuilder();
+        builder.position(position)
+                .accuracy(-1)
+                .date(parseDate(datetime))
+                .raw(createRaw())
+                .attribute(Message.ATTR_NUMBER_OF_SATELLITES, getNumberOfSatellites(gpsInfo))
+                .attribute(Message.ATTR_IGN_KEY_ON, ignKeyOn)
+                .attribute(Message.ATTR_GPS_DATA_UPLOAD_MODE, gpsDataUploadMode)
+                .attribute(Message.ATTR_REAL_TIME_UPLOAD, gpsRealTimeUpload);
+
+        builder.gpsStatus(createGpsStatus(builder));
+
+        GT100LocationMessage message = builder.build();
+        GT100Device device = new GT100Device("dummyId");
+        device.createStateFromMessage(message);
+
+
+        return message;
     }
 
 
-    protected Date parseDate(byte[] date) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yy-MM-dd HH:mm:ss");
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-        String dateInString = String.format("%d-%02d-%02d %02d:%02d:%02d", date[0], date[1], date[2], date[3], date[4], date[5]);
-        try {
-            return sdf.parse(dateInString);
-        } catch (ParseException e) {
-            return new Date();
-        }
-    }
-
-    protected int getNumberOfSatellites(byte data) {
-        return Integer.parseInt(String.format("%02x", data).split("")[1], 16);
-    }
-
-    protected double getCourseAndStatus(short data) {
-
-        return 0;
-    }
 }

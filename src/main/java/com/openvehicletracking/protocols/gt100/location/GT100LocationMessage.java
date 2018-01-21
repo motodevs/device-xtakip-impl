@@ -1,26 +1,19 @@
-package com.openvehicletracking.protocols.xtakip.lprotocol;
+package com.openvehicletracking.protocols.gt100.location;
 
 import com.openvehicletracking.core.*;
 import com.openvehicletracking.core.json.GsonFactory;
 import com.openvehicletracking.protocols.BaseLocationMessage;
-import com.openvehicletracking.protocols.xtakip.XTakip;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Optional;
 
+public class GT100LocationMessage extends BaseLocationMessage {
 
-/**
- * Created by oksuz on 19/05/2017.
- *
- */
-public class LProtocolMessage extends BaseLocationMessage {
+    private final int messageType = 0x22;
 
-    public LProtocolMessage(AbstractLocationMessageBuilder<?> builder) {
+    public GT100LocationMessage(AbstractLocationMessageBuilder<?> builder) {
         super(builder);
-        LProtocolMessageBuilder lProtocolMessageBuilder = (LProtocolMessageBuilder) builder;
-        device = new XTakip(lProtocolMessageBuilder.getDeviceId());
-        device.createStateFromMessage(this);
     }
 
     @Override

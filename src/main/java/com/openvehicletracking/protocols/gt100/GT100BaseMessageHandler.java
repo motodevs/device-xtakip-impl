@@ -31,4 +31,13 @@ abstract public class GT100BaseMessageHandler extends BaseMessageHandler {
         ByteBuffer buffer = convertToByteBuffer(msg);
         return buffer != null ? handle(buffer, connectionHolder) : null;
     }
+
+    protected String toHex(byte[] in) {
+        StringBuilder builder = new StringBuilder();
+        for (byte anIn : in) {
+            builder.append(String.format("%x", anIn));
+        }
+
+        return builder.toString();
+    }
 }

@@ -1,6 +1,8 @@
 package com.openvehicletracking.protocols.xtakip.lprotocol;
 
 
+import com.openvehicletracking.core.Position;
+import com.openvehicletracking.core.protocol.Message;
 import com.openvehicletracking.core.protocol.Parser;
 import com.openvehicletracking.protocols.ConversionHelper;
 import com.openvehicletracking.protocols.xtakip.XTakipConstants;
@@ -32,7 +34,7 @@ public class LProtocolParser implements Parser {
     }
 
     public LProtocolMessage parse() {
-        LProtocolMessage.LProtocolMessageBuilder messageBuilder = new LProtocolMessage.LProtocolMessageBuilder();
+        LProtocolMessageBuilder messageBuilder = new LProtocolMessageBuilder();
         String message = getMessage();
 
         message = message.substring(2, message.length() - 1);
@@ -81,27 +83,30 @@ public class LProtocolParser implements Parser {
 
         String additional = message;
 
-        messageBuilder.setDeviceId(deviceId);
-        messageBuilder.setStatus(gpsStatus);
-        messageBuilder.setLatitude(latitude);
-        messageBuilder.setLongitude(longitude);
-        messageBuilder.setRawMessage(getMessage());
-        messageBuilder.setAlert(alarm);
-        messageBuilder.setDistance(distance);
-        messageBuilder.setSpeed(speed);
-        messageBuilder.setDirection(direction);
+        Position position = new Position();
+        position.setLatitude(latitude);
+        position.setLongitude(longitude);
+        position.setDirection(direction);
+        position.setSpeed((int) speed);
+
+        messageBuilder.deviceId(deviceId);
+        messageBuilder.gpsStatus(gpsStatus);
+        messageBuilder.raw(getMessage());
+        messageBuilder.alert(alarm);
+        messageBuilder.position(position);
+        messageBuilder.attribute(Message.ATTR_DISTANCE, distance);
 
 
         try {
-            messageBuilder.setDatetime(format.parse(dateTime));
+            messageBuilder.date(format.parse(dateTime));
         } catch (ParseException e) {
-            messageBuilder.setDatetime(new Date());
+            messageBuilder.date(new Date());
         }
 
         return messageBuilder.build();
     }
 
-    public void createAttributes(String raw, LProtocolMessage.LProtocolMessageBuilder builder) {
+    public void createAttributes(String raw, LProtocolMessageBuilder builder) {
         String bits = new BigInteger(raw, 16).toString(2);
         bits = new StringBuilder(bits).reverse().toString();
         byte[] bytes = bits.getBytes();
@@ -110,46 +115,46 @@ public class LProtocolParser implements Parser {
         for (int i = 0; i < bytes.length; i++) {
             switch (i) {
                 case 0:
-                    builder.addAttribute(XTakipConstants.ATTR_INPUT_1_ACTIVE, bytes[i] == t);
+                    builder.attribute(XTakipConstants.ATTR_INPUT_1_ACTIVE, bytes[i] == t);
                     break;
                 case 1:
-                    builder.addAttribute(XTakipConstants.ATTR_INPUT_2_ACTIVE, bytes[i] == t);
+                    builder.attribute(XTakipConstants.ATTR_INPUT_2_ACTIVE, bytes[i] == t);
                     break;
                 case 2:
-                    builder.addAttribute(XTakipConstants.ATTR_INPUT_3_ACTIVE, bytes[i] == t);
+                    builder.attribute(XTakipConstants.ATTR_INPUT_3_ACTIVE, bytes[i] == t);
                     break;
                 case 3:
-                    builder.addAttribute(XTakipConstants.ATTR_IS_IGNITION_KEY_OFF, bytes[i] == t);
+                    builder.attribute(XTakipConstants.ATTR_IS_IGNITION_KEY_OFF, bytes[i] == t);
                     break;
                 case 4:
-                    builder.addAttribute(XTakipConstants.ATTR_IS_BATTERY_CUT, bytes[i] == t);
+                    builder.attribute(XTakipConstants.ATTR_IS_BATTERY_CUT, bytes[i] == t);
                     break;
                 case 5:
-                    builder.addAttribute(XTakipConstants.ATTR_OUTPUT_1_ACTIVE, bytes[i] == t);
+                    builder.attribute(XTakipConstants.ATTR_OUTPUT_1_ACTIVE, bytes[i] == t);
                     break;
                 case 6:
-                    builder.addAttribute(XTakipConstants.ATTR_OUTPUT_2_ACTIVE, bytes[i] == t);
+                    builder.attribute(XTakipConstants.ATTR_OUTPUT_2_ACTIVE, bytes[i] == t);
                     break;
                 case 7:
-                    builder.addAttribute(XTakipConstants.ATTR_OUTPUT_3_ACTIVE, bytes[i] == t);
+                    builder.attribute(XTakipConstants.ATTR_OUTPUT_3_ACTIVE, bytes[i] == t);
                     break;
                 case 8:
-                    builder.addAttribute(XTakipConstants.ATTR_OUT_OF_TEMP_LIMIT, bytes[i] == t);
+                    builder.attribute(XTakipConstants.ATTR_OUT_OF_TEMP_LIMIT, bytes[i] == t);
                     break;
                 case 9:
-                    builder.addAttribute(XTakipConstants.ATTR_OUT_OF_SPEED_LIMIT, bytes[i] == t);
+                    builder.attribute(XTakipConstants.ATTR_OUT_OF_SPEED_LIMIT, bytes[i] == t);
                     break;
                 case 10:
-                    builder.addAttribute(XTakipConstants.ATTR_GPRS_OPENED_OVERSEA, bytes[i] == t);
+                    builder.attribute(XTakipConstants.ATTR_GPRS_OPENED_OVERSEA, bytes[i] == t);
                     break;
                 case 11:
-                    builder.addAttribute(XTakipConstants.ATTR_DELTA_DISTANCE_OPENED, bytes[i] == t);
+                    builder.attribute(XTakipConstants.ATTR_DELTA_DISTANCE_OPENED, bytes[i] == t);
                     break;
                 case 12:
-                    builder.addAttribute(XTakipConstants.ATTR_IS_OFFLINE_RECORD, bytes[i] == t);
+                    builder.attribute(XTakipConstants.ATTR_IS_OFFLINE_RECORD, bytes[i] == t);
                     break;
                 case 13:
-                    builder.addAttribute(XTakipConstants.ATTR_IS_INVALID_RTC, bytes[i] == t);
+                    builder.attribute(XTakipConstants.ATTR_IS_INVALID_RTC, bytes[i] == t);
                     break;
             }
         }
