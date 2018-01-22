@@ -1,6 +1,7 @@
 package com.openvehicletracking.protocols.gt100.alert;
 
 import com.openvehicletracking.core.*;
+import com.openvehicletracking.core.json.GsonFactory;
 import com.openvehicletracking.protocols.BaseLocationMessage;
 
 import java.util.Date;
@@ -15,32 +16,32 @@ public class AlertMessage extends BaseLocationMessage {
 
     @Override
     public Position getPosition() {
-        return null;
+        return position;
     }
 
     @Override
     public GpsStatus getStatus() {
-        return null;
+        return gpsStatus;
     }
 
     @Override
     public Object getRaw() {
-        return null;
+        return raw;
     }
 
     @Override
     public Device getDevice() {
-        return null;
+        return device;
     }
 
     @Override
     public Date getDate() {
-        return null;
+        return new Date(datetime);
     }
 
     @Override
     public Optional<HashMap<String, Object>> getAttributes() {
-        return null;
+        return Optional.of(attributes);
     }
 
     @Override
@@ -50,6 +51,6 @@ public class AlertMessage extends BaseLocationMessage {
 
     @Override
     public String asJson() {
-        return null;
+        return GsonFactory.getGson().toJson(this);
     }
 }

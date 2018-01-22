@@ -3,6 +3,7 @@ package com.openvehicletracking.protocols.gt100.alert;
 import com.openvehicletracking.core.*;
 import com.openvehicletracking.core.protocol.Message;
 import com.openvehicletracking.protocols.gt100.GT100BaseMessageParser;
+import com.openvehicletracking.protocols.gt100.GT100Device;
 
 import java.nio.ByteBuffer;
 
@@ -59,7 +60,10 @@ public class AlertMessageParser extends GT100BaseMessageParser {
 
         createTerminalInfo(terminalInfo).forEach(builder::attribute);
 
-        return builder.build();
+        AlertMessage message = builder.build();
+        GT100Device device = new GT100Device("dummyId");
+        device.createStateFromMessage(message);
+        return message;
     }
 
 }

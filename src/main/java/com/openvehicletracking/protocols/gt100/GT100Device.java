@@ -2,6 +2,7 @@ package com.openvehicletracking.protocols.gt100;
 
 import com.openvehicletracking.core.*;
 import com.openvehicletracking.core.protocol.Message;
+import com.openvehicletracking.protocols.BaseLocationMessage;
 import com.openvehicletracking.protocols.gt100.location.GT100LocationMessage;
 
 import java.util.Date;
@@ -35,22 +36,22 @@ public class GT100Device implements Device {
 
     @Override
     public void createStateFromMessage(Message message) {
-        if (message instanceof GT100LocationMessage) {
-            GT100LocationMessage gt100LocationMessage = (GT100LocationMessage)message;
-            HashMap<String, Object> attributes = gt100LocationMessage.getAttributes().get();
+        if (message instanceof BaseLocationMessage) {
+            BaseLocationMessage baseLocationMessage = (BaseLocationMessage) message;
+            HashMap<String, Object> attributes = baseLocationMessage.getAttributes().get();
             boolean ignKeyOn = (boolean) attributes.get(Message.ATTR_IGN_KEY_ON);
 
             state.setCreatedAt(new Date().getTime());
             state.setUpdatedAt(new Date().getTime());
-            state.setDeviceDate(gt100LocationMessage.getDate().getTime());
+            state.setDeviceDate(baseLocationMessage.getDate().getTime());
             state.setDeviceStatus(DeviceStatus.ONLINE);
             state.setVehicleStatus(ignKeyOn ? VehicleStatus.MOVING : VehicleStatus.PARKED);
-            state.setGpsStatus(gt100LocationMessage.getStatus());
-            state.setPosition(gt100LocationMessage.getPosition());
+            state.setGpsStatus(baseLocationMessage.getStatus());
+            state.setPosition(baseLocationMessage.getPosition());
             state.addAttribute("distance", 0);
             state.addAttribute("ignKeyOff", !ignKeyOn);
             state.addAttribute("accuracy", 0);
-            gt100LocationMessage.setDevice(this);
+            baseLocationMessage.setDevice(this);
         }
     }
 
