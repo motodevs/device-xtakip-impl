@@ -7,11 +7,11 @@ import com.openvehicletracking.protocols.gt100.GT100BaseMessageHandler;
 
 import java.nio.ByteBuffer;
 
-public class GT100LocationMessageHandler extends GT100BaseMessageHandler {
+public class LocationMessageHandler extends GT100BaseMessageHandler {
 
     @Override
     protected Message handle(ByteBuffer msg, ConnectionHolder<?> connectionHolder) {
-        GT100LocationMessageParser parser = new GT100LocationMessageParser(msg);
+        LocationMessageParser parser = new LocationMessageParser(msg);
         GT100LocationMessage message = (GT100LocationMessage) parser.parse();
         message.getDevice().addConnection(connectionHolder);
         return message;
@@ -20,7 +20,7 @@ public class GT100LocationMessageHandler extends GT100BaseMessageHandler {
     @Override
     public boolean isMatch(Object msg) {
         ByteBuffer buffer = convertToByteBuffer(msg);
-        return buffer != null && isDeviceMessage(convertToByteBuffer(msg), (byte) 0x22);
+        return buffer != null && isDeviceMessage(buffer, (byte) 0x22);
     }
 }
 

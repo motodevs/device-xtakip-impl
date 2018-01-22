@@ -1,18 +1,14 @@
-package com.openvehicletracking.protocols.gt100.location;
+package com.openvehicletracking.protocols.gt100.alert;
 
 import com.openvehicletracking.core.*;
 import com.openvehicletracking.core.protocol.Message;
 import com.openvehicletracking.protocols.gt100.GT100BaseMessageParser;
-import com.openvehicletracking.protocols.gt100.GpsDataUploadMode;
-import com.openvehicletracking.protocols.gt100.GT100Device;
-
 
 import java.nio.ByteBuffer;
 
-public class GT100LocationMessageParser extends GT100BaseMessageParser {
+public class AlertMessageParser extends GT100BaseMessageParser {
 
-
-    public GT100LocationMessageParser(ByteBuffer msg) {
+    public AlertMessageParser(ByteBuffer msg) {
         super(msg);
     }
 
@@ -30,13 +26,16 @@ public class GT100LocationMessageParser extends GT100BaseMessageParser {
         double longitude = message.getInt() / 60.0 / 30000.0;
         byte speed = message.get();
         short courseAndStatus = message.getShort();
+        byte lbsLength = message.get();
         short mobileCountryCode = message.getShort();
         byte mobileNetworkCode = message.get();
         short locationAreaCode = message.getShort();
         message.get(cellTowerId);
-        boolean ignKeyOn = message.get() == 0x1;
-        GpsDataUploadMode gpsDataUploadMode = GpsDataUploadMode.createFrom(message.get());
-        boolean gpsRealTimeUpload = message.get() == 0x1;
+        byte terminalInfo = message.get();
+        byte voltageLevel = message.get();
+        byte gsmSignalStrength = message.get();
+        byte alert = message.get();
+        byte alertLanguage = message.get();
         short infoSerialNumber = message.getShort();
         short errorCheck = message.getShort();
         short end = message.getShort();
@@ -49,25 +48,18 @@ public class GT100LocationMessageParser extends GT100BaseMessageParser {
         position.setSpeed(speed);
         position.setDirection(CourseAndStatus.fromShort(courseAndStatus).getCourse());
 
-        GT100LocationMessageBuilder builder = new GT100LocationMessageBuilder();
+        AlertMessageBuilder builder = new AlertMessageBuilder();
         builder.position(position)
-                .accuracy(-1)
                 .date(parseDate(datetime))
                 .raw(createRaw())
                 .attribute(Message.ATTR_NUMBER_OF_SATELLITES, getNumberOfSatellites(gpsInfo))
-                .attribute(Message.ATTR_IGN_KEY_ON, ignKeyOn)
-                .attribute(Message.ATTR_GPS_DATA_UPLOAD_MODE, gpsDataUploadMode)
-                .attribute(Message.ATTR_REAL_TIME_UPLOAD, gpsRealTimeUpload);
+                .attribute(Message.ATTR_VOLTAGE, VoltageLevel.create(voltageLevel))
+                .attribute(Message.ATTR_GSM_SIGNAL_STRENGHT, GsmSignalStrength.create(gsmSignalStrength))
+                .attribute(Message.ATTR_ALERT, createAlert(alert));
 
-        builder.gpsStatus(createGpsStatus(builder));
+        createTerminalInfo(terminalInfo).forEach(builder::attribute);
 
-        GT100LocationMessage message = builder.build();
-        GT100Device device = new GT100Device("dummyId");
-        device.createStateFromMessage(message);
-
-
-        return message;
+        return builder.build();
     }
-
 
 }

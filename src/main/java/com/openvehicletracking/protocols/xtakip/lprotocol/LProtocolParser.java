@@ -124,7 +124,7 @@ public class LProtocolParser implements Parser {
                     builder.attribute(XTakipConstants.ATTR_INPUT_3_ACTIVE, bytes[i] == t);
                     break;
                 case 3:
-                    builder.attribute(XTakipConstants.ATTR_IS_IGNITION_KEY_OFF, bytes[i] == t);
+                    builder.attribute(Message.ATTR_IGN_KEY_ON, !(bytes[i] == t));
                     break;
                 case 4:
                     builder.attribute(XTakipConstants.ATTR_IS_BATTERY_CUT, bytes[i] == t);

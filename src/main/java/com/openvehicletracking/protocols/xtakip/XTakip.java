@@ -52,8 +52,8 @@ public class XTakip implements Device {
             }
 
             boolean ignKeyOff = false;
-            if (attributes.containsKey(XTakipConstants.ATTR_IS_IGNITION_KEY_OFF)) {
-                ignKeyOff = (boolean) attributes.get(XTakipConstants.ATTR_IS_IGNITION_KEY_OFF);
+            if (attributes.containsKey(Message.ATTR_IGN_KEY_ON)) {
+                ignKeyOff = (boolean) attributes.get(Message.ATTR_IGN_KEY_ON);
             }
 
             DeviceState state = new DeviceState();
