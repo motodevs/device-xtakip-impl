@@ -4,6 +4,7 @@ import com.openvehicletracking.core.*;
 import com.openvehicletracking.core.json.GsonFactory;
 import com.openvehicletracking.protocols.BaseLocationMessage;
 import com.openvehicletracking.protocols.xtakip.XTakip;
+import com.openvehicletracking.protocols.xtakip.XTakipProtocol;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -56,6 +57,16 @@ public class LProtocolMessage extends BaseLocationMessage {
     @Override
     public void reply(Reply reply) {
 
+    }
+
+    @Override
+    public String getProtocolName() {
+        return XTakipProtocol.NAME;
+    }
+
+    @Override
+    public int getType() {
+        return 'L';
     }
 
     @Override

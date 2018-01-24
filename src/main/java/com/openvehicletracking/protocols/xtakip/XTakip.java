@@ -14,7 +14,7 @@ import java.util.HashMap;
  */
 public class XTakip implements Device {
 
-    private final String name = XTakip.class.getName();
+    private final String name = XTakip.class.getSimpleName();
     private String deviceId;
     private DeviceState state;
     private transient ConnectionHolder<?> connectionHolder;

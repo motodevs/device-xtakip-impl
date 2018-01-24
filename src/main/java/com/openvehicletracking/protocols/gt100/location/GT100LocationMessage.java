@@ -2,7 +2,9 @@ package com.openvehicletracking.protocols.gt100.location;
 
 import com.openvehicletracking.core.*;
 import com.openvehicletracking.core.json.GsonFactory;
+import com.openvehicletracking.core.protocol.MessagingProtocol;
 import com.openvehicletracking.protocols.BaseLocationMessage;
+import com.openvehicletracking.protocols.gt100.Gt100Protocol;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -10,7 +12,7 @@ import java.util.Optional;
 
 public class GT100LocationMessage extends BaseLocationMessage {
 
-    private final int messageType = 0x22;
+    public static final int TYPE = 0x22;
 
     public GT100LocationMessage(AbstractLocationMessageBuilder<?> builder) {
         super(builder);
@@ -49,6 +51,17 @@ public class GT100LocationMessage extends BaseLocationMessage {
     @Override
     public void reply(Reply reply) {
 
+    }
+
+    @Override
+    public String getProtocolName() {
+        return Gt100Protocol.NAME;
+    }
+
+
+    @Override
+    public int getType() {
+        return TYPE;
     }
 
     @Override

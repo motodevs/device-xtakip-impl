@@ -12,6 +12,7 @@ import java.util.ArrayList;
 public class XTakipProtocol implements MessagingProtocol {
 
     private ArrayList<MessageHandler> handlers = new ArrayList<>();
+    public static final String NAME = "XTakip";
 
     public XTakipProtocol() {
         handlers.add(new LProtocolMessageHandler());
@@ -21,7 +22,7 @@ public class XTakipProtocol implements MessagingProtocol {
 
     @Override
     public String getName() {
-        return XTakip.class.getName();
+        return NAME;
     }
 
     @Override

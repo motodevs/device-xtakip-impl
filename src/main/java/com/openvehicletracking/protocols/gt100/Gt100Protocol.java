@@ -12,6 +12,7 @@ import java.util.ArrayList;
 public class Gt100Protocol implements MessagingProtocol {
 
     private final ArrayList<MessageHandler> handlers = new ArrayList<>();
+    public static final String NAME = "GT100";
 
     public Gt100Protocol() {
         handlers.add(new LoginMessageHandler());
@@ -22,7 +23,7 @@ public class Gt100Protocol implements MessagingProtocol {
 
     @Override
     public String getName() {
-        return "gt100";
+        return NAME;
     }
 
     @Override
