@@ -2,6 +2,7 @@ package com.openvehicletracking.protocols.gt100.login;
 
 import com.openvehicletracking.core.Device;
 import com.openvehicletracking.core.Reply;
+import com.openvehicletracking.core.json.GsonFactory;
 import com.openvehicletracking.core.protocol.Message;
 import com.openvehicletracking.protocols.gt100.Gt100Protocol;
 
@@ -57,6 +58,6 @@ public class LoginMessage implements Message {
 
     @Override
     public String asJson() {
-        return toString();
+        return GsonFactory.getGson().toJson(this);
     }
 }

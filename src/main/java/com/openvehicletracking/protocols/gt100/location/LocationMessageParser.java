@@ -62,7 +62,7 @@ public class LocationMessageParser extends GT100BaseMessageParser {
         builder.gpsStatus(createGpsStatus(builder));
 
         GT100LocationMessage message = builder.build();
-        GT100Device device = new GT100Device("dummyId");
+        GT100Device device = new GT100Device(null);
         device.createStateFromMessage(message);
 
 

@@ -14,7 +14,7 @@ abstract public class BaseLocationMessage implements LocationMessage {
     protected final long datetime;
     protected final HashMap<String, Object> attributes;
     protected final GpsStatus gpsStatus;
-    protected final String raw;
+    protected final Object raw;
     protected Device device;
 
     public BaseLocationMessage(AbstractLocationMessageBuilder<?> builder) {

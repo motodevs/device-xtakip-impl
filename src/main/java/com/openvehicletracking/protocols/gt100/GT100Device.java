@@ -3,7 +3,6 @@ package com.openvehicletracking.protocols.gt100;
 import com.openvehicletracking.core.*;
 import com.openvehicletracking.core.protocol.Message;
 import com.openvehicletracking.protocols.BaseLocationMessage;
-import com.openvehicletracking.protocols.gt100.location.GT100LocationMessage;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -48,9 +47,9 @@ public class GT100Device implements Device {
             state.setVehicleStatus(ignKeyOn ? VehicleStatus.MOVING : VehicleStatus.PARKED);
             state.setGpsStatus(baseLocationMessage.getStatus());
             state.setPosition(baseLocationMessage.getPosition());
-            state.addAttribute("distance", 0);
-            state.addAttribute("ignKeyOff", !ignKeyOn);
-            state.addAttribute("accuracy", 0);
+            if (baseLocationMessage.getAttributes().isPresent()) {
+                baseLocationMessage.getAttributes().get().forEach(state::addAttribute);
+            }
             baseLocationMessage.setDevice(this);
         }
     }

@@ -61,8 +61,9 @@ public class AlertMessageParser extends GT100BaseMessageParser {
         createTerminalInfo(terminalInfo).forEach(builder::attribute);
 
         AlertMessage message = builder.build();
-        GT100Device device = new GT100Device("dummyId");
+        GT100Device device = new GT100Device(null);
         device.createStateFromMessage(message);
+
         return message;
     }
 

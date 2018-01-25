@@ -16,7 +16,7 @@ public class HeartbeatMessageHandler extends GT100BaseMessageHandler {
     @Override
     protected Message handle(ByteBuffer msg, ConnectionHolder<?> connectionHolder) {
 
-        ByteBuffer reply = ByteBuffer.allocate(8);
+        ByteBuffer reply = ByteBuffer.allocate(10);
         reply.put((byte) 0x78)
             .put((byte) 0x78)
             .put((byte) 0x05)
@@ -24,9 +24,11 @@ public class HeartbeatMessageHandler extends GT100BaseMessageHandler {
             .put((byte) 0x00)
             .put((byte) 0x01)
             .put((byte) 0xD9)
-            .put((byte) 0xDC);
+            .put((byte) 0xDC)
+            .put((byte) 0x0D)
+            .put((byte) 0x0A);
 
-        LOGGER.info("writing reply");
+        LOGGER.info("writing reply to heartbeat");
         connectionHolder.write(new Reply(reply.array()));
         return null;
     }
