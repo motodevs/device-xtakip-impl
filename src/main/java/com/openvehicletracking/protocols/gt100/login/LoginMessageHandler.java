@@ -6,10 +6,14 @@ import com.openvehicletracking.core.Reply;
 import com.openvehicletracking.core.protocol.Message;
 import com.openvehicletracking.protocols.gt100.GT100BaseMessageHandler;
 import com.openvehicletracking.protocols.gt100.GT100Device;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 public class LoginMessageHandler extends GT100BaseMessageHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoginMessageHandler.class);
 
     @Override
     public boolean isMatch(Object msg) {
@@ -39,6 +43,9 @@ public class LoginMessageHandler extends GT100BaseMessageHandler {
 
         Device device = new GT100Device(toHex(serial));
         LoginMessage loginMessage = new LoginMessage(device, byteArrMsg);
+
+        LOGGER.info("message parsed: {}", loginMessage.asJson());
+
 
         ByteBuffer response = ByteBuffer.allocate(10);
         response.put((byte) 0x78)
