@@ -4,14 +4,9 @@ import com.openvehicletracking.core.ConnectionHolder;
 import com.openvehicletracking.core.Reply;
 import com.openvehicletracking.core.protocol.Message;
 import com.openvehicletracking.protocols.gt100.GT100BaseMessageHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.ByteBuffer;
 
 public class HeartbeatMessageHandler extends GT100BaseMessageHandler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(HeartbeatMessageHandler.class);
 
     @Override
     protected Message handle(ByteBuffer msg, ConnectionHolder<?> connectionHolder) {
@@ -23,12 +18,12 @@ public class HeartbeatMessageHandler extends GT100BaseMessageHandler {
             .put((byte) 0x13)
             .put((byte) 0x00)
             .put((byte) 0x01)
-            .put((byte) 0xD9)
-            .put((byte) 0xDC)
+            .putShort((short) 0xE9F1)
             .put((byte) 0x0D)
             .put((byte) 0x0A);
 
-        LOGGER.info("writing reply to heartbeat");
+
+
         connectionHolder.write(new Reply(reply.array()));
         return null;
     }

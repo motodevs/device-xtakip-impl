@@ -5,12 +5,16 @@ import com.openvehicletracking.core.protocol.Message;
 import com.openvehicletracking.protocols.gt100.GT100BaseMessageParser;
 import com.openvehicletracking.protocols.gt100.GpsDataUploadMode;
 import com.openvehicletracking.protocols.gt100.GT100Device;
+import com.openvehicletracking.protocols.gt100.alert.AlertMessageParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.nio.ByteBuffer;
 
 public class LocationMessageParser extends GT100BaseMessageParser {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AlertMessageParser.class);
 
     public LocationMessageParser(ByteBuffer msg) {
         super(msg);
@@ -18,6 +22,7 @@ public class LocationMessageParser extends GT100BaseMessageParser {
 
     @Override
     public Message parse() {
+        LOGGER.debug("new message {}", createRaw());
         byte[] datetime = new byte[6];
         byte[] cellTowerId = new byte[3];
 
@@ -65,7 +70,7 @@ public class LocationMessageParser extends GT100BaseMessageParser {
         GT100Device device = new GT100Device(null);
         device.createStateFromMessage(message);
 
-
+        LOGGER.debug("Message parsed : {}", message.asJson());
         return message;
     }
 

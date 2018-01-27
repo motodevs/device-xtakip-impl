@@ -34,7 +34,7 @@ public class GT100Device implements Device {
     }
 
     @Override
-    public void createStateFromMessage(Message message) {
+    public Device createStateFromMessage(Message message) {
         if (message instanceof BaseLocationMessage) {
             BaseLocationMessage baseLocationMessage = (BaseLocationMessage) message;
             HashMap<String, Object> attributes = baseLocationMessage.getAttributes().get();
@@ -52,6 +52,7 @@ public class GT100Device implements Device {
             }
             baseLocationMessage.setDevice(this);
         }
+        return this;
     }
 
     @Override

@@ -9,6 +9,8 @@ public class GT100Alert {
     public static final String FENCE_OUT_ALERT = "Fence Out Alert";
     public static final String OVER_SPEED_ALERT = "Over Speed Alert";
     public static final String MOVING_ALERT = "Moving Alert";
+    public static final String SHOCK_ALERT = "Shock Alert";
+    public static final String LOW_POWER = "Low Power Alert";
 
 
     private byte id;

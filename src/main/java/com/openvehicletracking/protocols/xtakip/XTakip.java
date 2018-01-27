@@ -39,7 +39,7 @@ public class XTakip implements Device {
     }
 
     @Override
-    public void createStateFromMessage(Message message) {
+    public Device createStateFromMessage(Message message) {
         if (message instanceof LProtocolMessage) {
             LProtocolMessage lProtocolMessage = (LProtocolMessage) message;
             HashMap<String, Object> attributes =lProtocolMessage.getAttributes().get();
@@ -47,7 +47,7 @@ public class XTakip implements Device {
                 boolean isOfflineRecord = (boolean) attributes.get(XTakipConstants.ATTR_IS_OFFLINE_RECORD);
                 if (isOfflineRecord) {
                     this.state = null;
-                    return;
+                    return this;
                 }
             }
 
@@ -71,6 +71,7 @@ public class XTakip implements Device {
 
             this.state = state;
         }
+        return this;
     }
 
     @Override

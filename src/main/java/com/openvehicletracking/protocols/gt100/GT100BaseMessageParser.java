@@ -47,10 +47,11 @@ abstract public class GT100BaseMessageParser implements Parser {
 
     protected String createRaw() {
         StringBuilder builder = new StringBuilder("[");
-        message.clear();
-        while (message.hasRemaining()) {
-            builder.append(message.get());
-            if (message.hasRemaining()) {
+        ByteBuffer clone = message.slice();
+        clone.clear();
+        while (clone.hasRemaining()) {
+            builder.append(clone.get());
+            if (clone.hasRemaining()) {
                 builder.append(",");
             }
         }
@@ -86,13 +87,18 @@ abstract public class GT100BaseMessageParser implements Parser {
                 .build();
     }
 
-    protected HashMap<String, Boolean> createTerminalInfo(byte info) {
-        HashMap<String, Boolean> terminalInfo = new HashMap<>();
+    protected HashMap<String, Object> createTerminalInfo(byte info) {
+        HashMap<String, Object> terminalInfo = new HashMap<>();
         terminalInfo.put(GT100Contants.DEFENSE_ACTIVATED, (info & 1) == 1);
         terminalInfo.put(Message.ATTR_IGN_KEY_ON, (info >> 1 & 1) == 1);
         terminalInfo.put(GT100Contants.CHARGE_ON, (info >> 2 & 1) == 1);
         terminalInfo.put(GT100Contants.GPS_TRACKING_ON, (info >> 6 & 1) == 1);
         terminalInfo.put(GT100Contants.OIL_AND_ELECTRICITY_CONNECTED, (info >> 7 & 1) == 1);
+        byte alarmInfo = (byte) (info & 0x38);
+        if (GT100Alerts.isExists(alarmInfo)) {
+            terminalInfo.put(Message.ATTR_ALERT, createAlert(alarmInfo));
+        }
+
         return terminalInfo;
     }
 }

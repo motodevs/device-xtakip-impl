@@ -17,7 +17,7 @@ public class AlertMessageParserTest {
 
         Message message = handler.handle(rawMsg, null);
 
-        System.out.println();
+
 
     }
 
