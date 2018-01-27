@@ -9,6 +9,7 @@ import com.openvehicletracking.core.alert.Alert;
 import com.openvehicletracking.core.protocol.Message;
 import com.openvehicletracking.protocols.gt100.GT100Alert;
 import com.openvehicletracking.protocols.gt100.GT100Contants;
+import com.openvehicletracking.protocols.gt100.TestConnectionHolder;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -122,16 +123,4 @@ public class HeartbeatMessageTest {
     }
 
 
-    public static class TestConnectionHolder implements ConnectionHolder<Void> {
-
-        @Override
-        public void write(Reply reply) {
-
-        }
-
-        @Override
-        public Void getConnection() {
-            return null;
-        }
-    }
 }

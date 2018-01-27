@@ -39,9 +39,13 @@ public class LoginMessageHandler extends GT100BaseMessageHandler {
         byte[] header = Arrays.copyOfRange(byteArrMsg, 0, 2);
         byte[] lenght = Arrays.copyOfRange(byteArrMsg, 2, 3);
         byte[] type = Arrays.copyOfRange(byteArrMsg, 3, 4);
-        byte[] serial = Arrays.copyOfRange(byteArrMsg, 4, 12);
+        byte[] serialBytes = Arrays.copyOfRange(byteArrMsg, 4, 12);
 
-        Device device = new GT100Device(toHex(serial));
+        String serial = toHex(serialBytes);
+        if (serial.length() > 15) {
+            serial = serial.substring(serial.length() - 15);
+        }
+        Device device = new GT100Device(serial);
         LoginMessage loginMessage = new LoginMessage(device, byteArrMsg);
 
         LOGGER.info("message parsed: {}", loginMessage.asJson());

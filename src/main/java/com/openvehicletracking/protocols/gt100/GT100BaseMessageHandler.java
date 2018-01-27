@@ -35,7 +35,7 @@ abstract public class GT100BaseMessageHandler extends BaseMessageHandler {
     protected String toHex(byte[] in) {
         StringBuilder builder = new StringBuilder();
         for (byte anIn : in) {
-            builder.append(String.format("%x", anIn));
+            builder.append(String.format("%02x", anIn));
         }
 
         return builder.toString();
