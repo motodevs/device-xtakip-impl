@@ -8,6 +8,7 @@ import com.openvehicletracking.core.protocol.Message;
 import com.openvehicletracking.core.protocol.Parser;
 import com.openvehicletracking.protocols.gt100.location.LocationMessageBuilder;
 
+import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -47,7 +48,7 @@ abstract public class GT100BaseMessageParser implements Parser {
 
     protected String createRaw() {
         StringBuilder builder = new StringBuilder("[");
-        ByteBuffer clone = message.slice();
+        ByteBuffer clone = message.duplicate();
         clone.clear();
         while (clone.hasRemaining()) {
             builder.append(clone.get());
@@ -73,6 +74,7 @@ abstract public class GT100BaseMessageParser implements Parser {
         return Integer.parseInt(String.format("%02x", data).split("")[1], 16);
     }
 
+    @Nullable
     protected Alert createAlert(byte alert) {
         if (!GT100Alerts.isExists(alert)) {
             return null;
@@ -93,7 +95,7 @@ abstract public class GT100BaseMessageParser implements Parser {
         terminalInfo.put(Message.ATTR_IGN_KEY_ON, (info >> 1 & 1) == 1);
         terminalInfo.put(GT100Contants.CHARGE_ON, (info >> 2 & 1) == 1);
         terminalInfo.put(GT100Contants.GPS_TRACKING_ON, (info >> 6 & 1) == 1);
-        terminalInfo.put(GT100Contants.OIL_AND_ELECTRICITY_CONNECTED, (info >> 7 & 1) == 1);
+        terminalInfo.put(GT100Contants.OIL_AND_ELECTRICITY_DISCONNECTED, (info >> 7 & 1) == 1);
         byte alarmInfo = (byte) (info & 0x38);
         if (GT100Alerts.isExists(alarmInfo)) {
             terminalInfo.put(Message.ATTR_ALERT, createAlert(alarmInfo));

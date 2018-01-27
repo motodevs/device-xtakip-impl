@@ -28,11 +28,10 @@ public class HeartbeatMessageParser extends GT100BaseMessageParser {
         HashMap<String, Object> terminalInfo = createTerminalInfo(message.get());
         terminalInfo.put(Message.ATTR_VOLTAGE, VoltageLevel.create(message.get()));
         terminalInfo.put(Message.ATTR_GSM_SIGNAL_STRENGHT, GsmSignalStrength.create(message.get()));
-        message.get(); // skip alert language
         Alert alert = createAlert(message.get());
         if (terminalInfo.containsKey(Message.ATTR_ALERT)) {
             Alert terminalInfoAlert = (Alert) terminalInfo.get(Message.ATTR_ALERT);
-            if (!Objects.equals(terminalInfoAlert.getDescription(), alert.getDescription())) {
+            if (alert != null && !Objects.equals(terminalInfoAlert.getDescription(), alert.getDescription())) {
                 terminalInfo.put(Message.ATTR_ALERT, alert);
                 terminalInfo.put(Message.ATTR_ADDITIONAL_ALERT, terminalInfoAlert);
             }

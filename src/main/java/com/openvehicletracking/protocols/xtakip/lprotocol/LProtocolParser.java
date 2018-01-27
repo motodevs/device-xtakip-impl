@@ -83,25 +83,26 @@ public class LProtocolParser implements Parser {
 
         String additional = message;
 
-        Position position = new Position();
-        position.setLatitude(latitude);
-        position.setLongitude(longitude);
-        position.setDirection(direction);
-        position.setSpeed((int) speed);
-
-        messageBuilder.deviceId(deviceId);
-        messageBuilder.gpsStatus(gpsStatus);
-        messageBuilder.raw(getMessage());
-        messageBuilder.alert(alarm);
-        messageBuilder.position(position);
-        messageBuilder.attribute(Message.ATTR_DISTANCE, distance);
-
-
         try {
             messageBuilder.date(format.parse(dateTime));
         } catch (ParseException e) {
             messageBuilder.date(new Date());
         }
+
+        Position position = new Position();
+        position.setLatitude(latitude);
+        position.setLongitude(longitude);
+        position.setDirection(direction);
+        position.setSpeed((int) speed);
+        messageBuilder.deviceId(deviceId);
+        messageBuilder.gpsStatus(gpsStatus);
+        messageBuilder.raw(this.message);
+        messageBuilder.alert(alarm);
+        messageBuilder.position(position);
+        messageBuilder.attribute(Message.ATTR_DISTANCE, distance);
+
+
+
 
         return messageBuilder.build();
     }

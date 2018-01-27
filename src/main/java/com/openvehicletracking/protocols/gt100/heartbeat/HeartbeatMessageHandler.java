@@ -22,10 +22,9 @@ public class HeartbeatMessageHandler extends GT100BaseMessageHandler {
             .put((byte) 0x0D)
             .put((byte) 0x0A);
 
-
-
         connectionHolder.write(new Reply(reply.array()));
-        return null;
+        HeartbeatMessageParser heartbeatMessageParser = new HeartbeatMessageParser(msg);
+        return heartbeatMessageParser.parse();
     }
 
     @Override

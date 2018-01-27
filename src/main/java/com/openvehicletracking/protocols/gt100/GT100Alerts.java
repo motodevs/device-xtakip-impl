@@ -4,7 +4,6 @@ import java.util.HashMap;
 
 public class GT100Alerts {
 
-    public static final byte TERMINAL_INFO_ALARM_NORMAL= 0x00;
     public static final byte TERMINAL_INFO_ALARM_SHOCK = 0x08;
     public static final byte TERMINAL_INFO_ALARM_POWER_CUT = 0x0A;
     public static final byte TERMINAL_INFO_ALARM_LOW_BATTERY = 0x18;
@@ -22,7 +21,7 @@ public class GT100Alerts {
         alerts.put((byte) 0x09, new GT100Alert((byte) 0x09, GT100Alert.MOVING_ALERT));
         // heartbeat alerts
         alerts.put(TERMINAL_INFO_ALARM_SHOCK, new GT100Alert(TERMINAL_INFO_ALARM_SHOCK, GT100Alert.SHOCK_ALERT));
-        alerts.put(TERMINAL_INFO_ALARM_SHOCK, new GT100Alert(TERMINAL_INFO_ALARM_POWER_CUT, GT100Alert.POWER_CUT_ALERT));
+        alerts.put(TERMINAL_INFO_ALARM_POWER_CUT, new GT100Alert(TERMINAL_INFO_ALARM_POWER_CUT, GT100Alert.POWER_CUT_ALERT));
         alerts.put(TERMINAL_INFO_ALARM_LOW_BATTERY, new GT100Alert(TERMINAL_INFO_ALARM_LOW_BATTERY, GT100Alert.LOW_POWER));
         alerts.put(TERMINAL_INFO_ALARM_SOS, new GT100Alert(TERMINAL_INFO_ALARM_SOS, GT100Alert.SOS_ALERT));
     }
