@@ -1,6 +1,7 @@
 package com.openvehicletracking.protocols.gt100.alert;
 
 import com.openvehicletracking.core.*;
+import com.openvehicletracking.core.alert.Alert;
 import com.openvehicletracking.core.protocol.Message;
 import com.openvehicletracking.protocols.gt100.GT100BaseMessageParser;
 import com.openvehicletracking.protocols.gt100.GT100Device;
@@ -8,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 
 public class AlertMessageParser extends GT100BaseMessageParser {
 
@@ -37,10 +39,10 @@ public class AlertMessageParser extends GT100BaseMessageParser {
         byte mobileNetworkCode = message.get();
         short locationAreaCode = message.getShort();
         message.get(cellTowerId);
-        byte terminalInfo = message.get();
+        byte rawTerminalInfo = message.get();
         byte voltageLevel = message.get();
         byte gsmSignalStrength = message.get();
-        byte alert = message.get();
+        byte rawAlert = message.get();
         byte alertLanguage = message.get();
         short infoSerialNumber = message.getShort();
         short errorCheck = message.getShort();
@@ -54,6 +56,7 @@ public class AlertMessageParser extends GT100BaseMessageParser {
         position.setSpeed(speed);
         position.setDirection(CourseAndStatus.fromShort(courseAndStatus).getCourse());
 
+        Alert alert = createAlert(rawAlert);
         AlertMessageBuilder builder = new AlertMessageBuilder();
         builder.position(position)
                 .date(parseDate(datetime))
@@ -61,9 +64,12 @@ public class AlertMessageParser extends GT100BaseMessageParser {
                 .attribute(Message.ATTR_NUMBER_OF_SATELLITES, getNumberOfSatellites(gpsInfo))
                 .attribute(Message.ATTR_VOLTAGE, VoltageLevel.create(voltageLevel))
                 .attribute(Message.ATTR_GSM_SIGNAL_STRENGHT, GsmSignalStrength.create(gsmSignalStrength))
-                .attribute(Message.ATTR_ALERT, createAlert(alert));
+                .attribute(Message.ATTR_ALERT, alert);
 
-        createTerminalInfo(terminalInfo).forEach(builder::attribute);
+
+        HashMap<String, Object> terminalInfo = createTerminalInfo(rawTerminalInfo);
+        mergeTerminalInfoAlertAndAlert(terminalInfo, alert);
+        terminalInfo.forEach(builder::attribute);
 
         AlertMessage message = builder.build();
         GT100Device device = new GT100Device(null);

@@ -63,7 +63,7 @@ public class HeartbeatMessageTest {
 
         Alert alert = (Alert) attributes.getOrDefault(Message.ATTR_ALERT, null);
 
-        Assert.assertEquals(GT100Alert.SHOCK_ALERT, alert.getDescription());
+        Assert.assertEquals(GT100Alert.VIBRATION_ALERT, alert.getDescription());
     }
 
     @Test
@@ -109,7 +109,9 @@ public class HeartbeatMessageTest {
 
 
         Assert.assertEquals(GT100Alert.VIBRATION_ALERT, alert.getDescription());
-        Assert.assertEquals(GT100Alert.SHOCK_ALERT, alert2.getDescription());
+
+        // same alert coming from terminal info byte and alert byte so additional alert should be empty
+        Assert.assertEquals(null, alert2);
 
     }
 

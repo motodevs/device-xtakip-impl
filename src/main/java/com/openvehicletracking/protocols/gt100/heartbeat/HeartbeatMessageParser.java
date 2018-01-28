@@ -25,19 +25,12 @@ public class HeartbeatMessageParser extends GT100BaseMessageParser {
     public Message parse() {
         LOGGER.debug("new message {}", createRaw());
         message.position(4); // skip header, length and protocol no
+
         HashMap<String, Object> terminalInfo = createTerminalInfo(message.get());
         terminalInfo.put(Message.ATTR_VOLTAGE, VoltageLevel.create(message.get()));
         terminalInfo.put(Message.ATTR_GSM_SIGNAL_STRENGHT, GsmSignalStrength.create(message.get()));
-        Alert alert = createAlert(message.get());
-        if (terminalInfo.containsKey(Message.ATTR_ALERT)) {
-            Alert terminalInfoAlert = (Alert) terminalInfo.get(Message.ATTR_ALERT);
-            if (alert != null && !Objects.equals(terminalInfoAlert.getDescription(), alert.getDescription())) {
-                terminalInfo.put(Message.ATTR_ALERT, alert);
-                terminalInfo.put(Message.ATTR_ADDITIONAL_ALERT, terminalInfoAlert);
-            }
-        } else {
-            terminalInfo.put(Message.ATTR_ALERT, alert);
-        }
+
+        mergeTerminalInfoAlertAndAlert(terminalInfo, createAlert(message.get()));
 
         HeartbeatMessage heartbeatMessage = new HeartbeatMessage(createRaw(), terminalInfo);
         LOGGER.debug("Message parsed : {}", heartbeatMessage.asJson());

@@ -20,10 +20,10 @@ public class GT100Alerts {
         alerts.put((byte) 0x06, new GT100Alert((byte) 0x06, GT100Alert.OVER_SPEED_ALERT));
         alerts.put((byte) 0x09, new GT100Alert((byte) 0x09, GT100Alert.MOVING_ALERT));
         // heartbeat alerts
-        alerts.put(TERMINAL_INFO_ALARM_SHOCK, new GT100Alert(TERMINAL_INFO_ALARM_SHOCK, GT100Alert.SHOCK_ALERT));
-        alerts.put(TERMINAL_INFO_ALARM_POWER_CUT, new GT100Alert(TERMINAL_INFO_ALARM_POWER_CUT, GT100Alert.POWER_CUT_ALERT));
+        alerts.put(TERMINAL_INFO_ALARM_SHOCK, new GT100Alert((byte) 0x03, GT100Alert.VIBRATION_ALERT));
+        alerts.put(TERMINAL_INFO_ALARM_POWER_CUT, new GT100Alert((byte) 0x02, GT100Alert.POWER_CUT_ALERT));
         alerts.put(TERMINAL_INFO_ALARM_LOW_BATTERY, new GT100Alert(TERMINAL_INFO_ALARM_LOW_BATTERY, GT100Alert.LOW_POWER));
-        alerts.put(TERMINAL_INFO_ALARM_SOS, new GT100Alert(TERMINAL_INFO_ALARM_SOS, GT100Alert.SOS_ALERT));
+        alerts.put(TERMINAL_INFO_ALARM_SOS, new GT100Alert((byte) 0x01, GT100Alert.SOS_ALERT));
     }
 
     public static HashMap<Byte, GT100Alert> getAll() {

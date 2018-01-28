@@ -14,6 +14,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.TimeZone;
 
 abstract public class GT100BaseMessageParser implements Parser {
@@ -85,7 +86,7 @@ abstract public class GT100BaseMessageParser implements Parser {
                 .action(AlertAction.SEND_NOTIFICATION)
                 .action(AlertAction.SEND_SMS)
                 .description(gt100Alert.getDescription())
-                .id(alert)
+                .id(gt100Alert.getId())
                 .build();
     }
 
@@ -102,5 +103,17 @@ abstract public class GT100BaseMessageParser implements Parser {
         }
 
         return terminalInfo;
+    }
+
+    protected void mergeTerminalInfoAlertAndAlert(HashMap<String, Object> terminalInfo, Alert alert) {
+        if (terminalInfo.containsKey(Message.ATTR_ALERT)) {
+            Alert terminalInfoAlert = (Alert) terminalInfo.get(Message.ATTR_ALERT);
+            if (alert != null && !Objects.equals(terminalInfoAlert.getAlertId(), alert.getAlertId())) {
+                terminalInfo.put(Message.ATTR_ALERT, alert);
+                terminalInfo.put(Message.ATTR_ADDITIONAL_ALERT, terminalInfoAlert);
+            }
+        } else if (alert != null) {
+            terminalInfo.put(Message.ATTR_ALERT, alert);
+        }
     }
 }
