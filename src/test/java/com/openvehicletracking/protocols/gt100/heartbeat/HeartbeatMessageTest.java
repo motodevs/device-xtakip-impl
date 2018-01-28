@@ -1,9 +1,7 @@
 package com.openvehicletracking.protocols.gt100.heartbeat;
 
 
-import com.openvehicletracking.core.ConnectionHolder;
 import com.openvehicletracking.core.GsmSignalStrength;
-import com.openvehicletracking.core.Reply;
 import com.openvehicletracking.core.VoltageLevel;
 import com.openvehicletracking.core.alert.Alert;
 import com.openvehicletracking.core.protocol.Message;
