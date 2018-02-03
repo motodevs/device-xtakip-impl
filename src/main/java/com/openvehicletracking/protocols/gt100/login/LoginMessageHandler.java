@@ -5,6 +5,7 @@ import com.openvehicletracking.core.Device;
 import com.openvehicletracking.core.Reply;
 import com.openvehicletracking.core.protocol.Message;
 import com.openvehicletracking.protocols.gt100.GT100BaseMessageHandler;
+import com.openvehicletracking.protocols.gt100.GT100BaseMessageParser;
 import com.openvehicletracking.protocols.gt100.GT100Device;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,7 @@ public class LoginMessageHandler extends GT100BaseMessageHandler {
             serial = serial.substring(serial.length() - 15);
         }
         Device device = new GT100Device(serial);
-        LoginMessage loginMessage = new LoginMessage(device, byteArrMsg);
+        LoginMessage loginMessage = new LoginMessage(device, new LoginMessageParser(msg).getRaw());
 
         LOGGER.info("message parsed: {}", loginMessage.asJson());
 
@@ -65,6 +66,22 @@ public class LoginMessageHandler extends GT100BaseMessageHandler {
 
         connectionHolder.write(new Reply(response.array()));
         return loginMessage;
+    }
+
+    private static class LoginMessageParser extends GT100BaseMessageParser {
+
+        LoginMessageParser(ByteBuffer msg) {
+            super(msg);
+        }
+
+        @Override
+        public Message parse() {
+            return null;
+        }
+
+        public String getRaw() {
+            return createRaw();
+        }
     }
 
 

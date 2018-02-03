@@ -13,10 +13,10 @@ import java.util.Optional;
 public class LoginMessage implements Message {
 
     private final Device device;
-    private final byte[] raw;
+    private final String raw;
     public static final int TYPE = 0x01;
 
-    public LoginMessage(Device device, byte[] raw) {
+    public LoginMessage(Device device, String raw) {
         this.device = device;
         this.raw = raw;
     }
