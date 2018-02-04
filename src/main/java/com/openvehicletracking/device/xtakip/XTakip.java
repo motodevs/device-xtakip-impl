@@ -1,30 +1,25 @@
 package com.openvehicletracking.device.xtakip;
 
 
-import com.openvehicletracking.core.db.CommandDAO;
+import com.google.gson.JsonObject;
+import com.openvehicletracking.core.*;
+import com.openvehicletracking.core.alert.Alert;
+import com.openvehicletracking.core.exception.UnsupportedMessageTypeException;
+import com.openvehicletracking.core.geojson.*;
+import com.openvehicletracking.core.message.*;
+import com.openvehicletracking.core.message.exception.UnsupportedReplyTypeException;
+import com.openvehicletracking.core.message.impl.ReplyImpl;
 import com.openvehicletracking.device.xtakip.hxprotocol.HXProtocolMessageHandler;
 import com.openvehicletracking.device.xtakip.lprotocol.LProtocolMessage;
 import com.openvehicletracking.device.xtakip.lprotocol.LProtocolMessageHandler;
 import com.openvehicletracking.device.xtakip.oxprotocol.OXProtocolMessageHandler;
-import com.openvehicletracking.core.Device;
-import com.openvehicletracking.core.DeviceStatus;
-import com.openvehicletracking.core.GpsStatus;
-import com.openvehicletracking.core.alarm.Alarm;
-import com.openvehicletracking.core.alarm.AlarmAction;
-import com.openvehicletracking.core.db.DeviceDAO;
-import com.openvehicletracking.core.message.Message;
-import com.openvehicletracking.core.message.MessageHandler;
-import io.vertx.core.Handler;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 /**
  * Created by oksuz on 19/05/2017.
@@ -36,181 +31,209 @@ public class XTakip implements Device {
     private static final Logger LOGGER = LoggerFactory.getLogger(XTakip.class);
 
     private final CopyOnWriteArrayList<MessageHandler> messageHandlers = new CopyOnWriteArrayList<>();
-    private final ConcurrentHashMap<Integer, XtakipAlarm> alarms = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, XtakipAlert> alerts = new ConcurrentHashMap<>();
 
     public XTakip() {
-        messageHandlers.add(new LProtocolMessageHandler());
-        messageHandlers.add(new HXProtocolMessageHandler());
-        messageHandlers.add(new OXProtocolMessageHandler());
-        initializeAlarmMap();
+        messageHandlers.addAll(Arrays.asList(new LProtocolMessageHandler(), new HXProtocolMessageHandler(), new OXProtocolMessageHandler()));
+        alerts.putAll(Alarms.getAll());
+        LOGGER.info("device {} initialized", NAME);
     }
 
+    @Override
     public String getName() {
         return NAME;
     }
 
+    @Override
     public CopyOnWriteArrayList<MessageHandler> getHandlers() {
         return messageHandlers;
     }
 
-
     @Override
-    public void generateAlarmFromMessage(Message message, DeviceDAO deviceQueryHelper, Handler<Alarm> alarmHandler) {
-        if (!(message instanceof LProtocolMessage)) {
-            return;
+    public Alert generateAlertFromMessage(Message message) {
+        if (message.getClass() != getLocationType()) {
+            return null;
         }
 
         LProtocolMessage lProtocolMessage = (LProtocolMessage) message;
-        if (alarms.containsKey(lProtocolMessage.getAlarm())) {
-            XtakipAlarm alarm = alarms.get(lProtocolMessage.getAlarm());
+        if (alerts.containsKey(lProtocolMessage.getAlert())) {
+            XtakipAlert alert = alerts.get(lProtocolMessage.getAlert());
 
             JsonObject extra = new JsonObject();
-            extra.put("xTakipAlarmId", lProtocolMessage.getAlarm());
-            extra.put("distance", lProtocolMessage.getDistance());
+            extra.addProperty("xTakipAlertId", lProtocolMessage.getAlert());
+            extra.addProperty("distance", lProtocolMessage.getDistance());
 
-            Alarm deviceAlarm = new Alarm(lProtocolMessage.getDeviceId(), alarm.getDescription(), alarm.getActions(), lProtocolMessage.getDatetime(), extra);
-
+            Alert deviceAlarm = new Alert(lProtocolMessage.getDeviceId(), alert.getDescription(), alert.getActions(), lProtocolMessage.getDatetime(), extra);
             LOGGER.info("device alarm created {}", deviceAlarm);
-            alarmHandler.handle(deviceAlarm);
-            return;
+            return deviceAlarm;
         }
 
-
-        MovingAlarmGenerator movingAlarmGenerator = new MovingAlarmGenerator(lProtocolMessage, deviceQueryHelper, alarmHandler);
-        movingAlarmGenerator.create();
+        return null;
     }
 
     @Override
-    public void updateMeta(Message message, DeviceDAO deviceQueryHelper) {
-        if (!(message instanceof LProtocolMessage)) {
-            return;
+    public <T> Reply<T> replyMessage(Message message, List<? extends CommandMessage> unreadMessages) throws UnsupportedReplyTypeException {
+        if (unreadMessages == null || unreadMessages.size() == 0) {
+            return null;
         }
+
+        List<T> replies = unreadMessages.stream().map(CommandMessage<T>::getCommand).collect(Collectors.toList());
+        return new ReplyImpl<>(replies);
+    }
+
+
+    @Override
+    public Class<? extends LocationMessage> getLocationType() {
+        return LProtocolMessage.class;
+    }
+
+    @Override
+    public DeviceState createStateFromMessage(Message message) throws UnsupportedMessageTypeException {
+        if (message.getClass() != getLocationType()) {
+            throw new UnsupportedMessageTypeException("Message type should be " + getLocationType().getCanonicalName());
+        }
+
 
         LProtocolMessage lProtocolMessage = (LProtocolMessage) message;
-
-        JsonObject newMeta = new JsonObject()
-                .put("deviceId",lProtocolMessage.getDeviceId())
-                .put("distance", lProtocolMessage.getDistance())
-                .put("speed", lProtocolMessage.getSpeed())
-                .put("gpsStatus", lProtocolMessage.getStatus())
-                .put("createdAt", new Date().getTime())
-                .put("updatedAt", new Date().getTime())
-                .put("deviceDate", lProtocolMessage.getDatetime())
-                ;
-
-
-        if (lProtocolMessage.getDeviceState().getInvalidRTC() != null) {
-            newMeta.put("invalidDeviceDate", lProtocolMessage.getDeviceState().getInvalidRTC());
+        if (lProtocolMessage.getStatus() == GpsStatus.NO_DATA) {
+            return null;
         }
 
-        if (lProtocolMessage.getDeviceState().getIgnitiKeyOff() != null) {
-            newMeta.put("ignitionKeyOff", lProtocolMessage.getDeviceState().getIgnitiKeyOff());
+        Boolean isOfflineRecord = lProtocolMessage.getDeviceState().getOfflineRecord();
+        if (isOfflineRecord == Boolean.TRUE) {
+            return null;
         }
 
-        if (lProtocolMessage.getAlarm() == 13 ||
-                (lProtocolMessage.getDeviceState().getIgnitiKeyOff() != null && lProtocolMessage.getDeviceState().getIgnitiKeyOff())) {
-            newMeta.put("status", DeviceStatus.PARKED);
+        Boolean ignKeyOff = lProtocolMessage.getDeviceState().getIgnitiKeyOff();
+
+        Date now = new Date();
+        DeviceState state = new DeviceState();
+        state.setDeviceId(lProtocolMessage.getDeviceId());
+        state.setDistance(lProtocolMessage.getDistance());
+        state.setCreatedAt(now.getTime());
+        state.setUpdatedAt(now.getTime());
+        state.setDeviceDate(lProtocolMessage.getDatetime());
+        state.setLatitude(lProtocolMessage.getLatitude());
+        state.setLongitude(lProtocolMessage.getLongitude());
+        state.setDirection(lProtocolMessage.getDirection());
+        state.setIgnitionKeyOff(ignKeyOff == Boolean.TRUE);
+        state.setInvalidDeviceDate(lProtocolMessage.getDeviceState().getInvalidRTC() == Boolean.TRUE);
+        state.setGpsStatus(lProtocolMessage.getStatus());
+        state.setSpeed(lProtocolMessage.getSpeed());
+
+        switch (lProtocolMessage.getAlert()) {
+            case DeviceConstants.IGN_KEY_OFF_ALARM_ID:
+                state.setDeviceStatus(DeviceStatus.PARKED);
+                break;
+            case DeviceConstants.IGN_KEY_ON_ALARM_ID:
+                state.setDeviceStatus(DeviceStatus.MOVING);
+                break;
+            default:
+                if (lProtocolMessage.getSpeed() != 0 || ignKeyOff != null) {
+                    state.setDeviceStatus((ignKeyOff == Boolean.TRUE ? DeviceStatus.PARKED : DeviceStatus.MOVING));
+                } else {
+                    state.setDeviceStatus(DeviceStatus.CONNECTION_LOST);
+                }
         }
 
-        if (lProtocolMessage.getAlarm() == 12 ||
-                (lProtocolMessage.getDeviceState().getIgnitiKeyOff() != null && !lProtocolMessage.getDeviceState().getIgnitiKeyOff())) {
-            newMeta.put("status", DeviceStatus.MOVING);
-        }
-
-        if (lProtocolMessage.getStatus() != GpsStatus.NO_DATA) {
-            newMeta.put("latitude", lProtocolMessage.getLatitude());
-            newMeta.put("longitude", lProtocolMessage.getLongitude());
-        }
-
-        LOGGER.debug("device meta created {}", newMeta);
-        if (newMeta.containsKey("status")) {
-            deviceQueryHelper.upsertMeta(newMeta, new JsonObject());
-            LOGGER.info("device meta updated {}", newMeta);
-        }
-    }
-
-
-    private void initializeAlarmMap() {
-        alarms.put(1, new XtakipAlarm(1, "Noktaya giriş/çıkış yapıldı", Collections.singletonList(AlarmAction.INFO)));
-        alarms.put(2, new XtakipAlarm(2, "RFID kart okundu", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(3, new XtakipAlarm(3, "Maksimum hız limit aşıldı", Arrays.asList(AlarmAction.INFO, AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(4, new XtakipAlarm(4, "Maksimum bekleme süresi aşıldı.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(5, new XtakipAlarm(5, "Hızlanma ivme limiti aşıldı.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(6, new XtakipAlarm(6, "Yavaşlama ivme limiti aşıldı.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(7, new XtakipAlarm(7, "Akü bağlantısı kesildi.", Arrays.asList(AlarmAction.SEND_SMS, AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(8, new XtakipAlarm(8, "Giriş2 alarm tipi 1 oluştu.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(9, new XtakipAlarm(9, "Giriş2 alarm tipi 2 oluştu.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(10, new XtakipAlarm(10, "Giriş1 alarm tipi 1 oluştu.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(11, new XtakipAlarm(11, "Giriş1 alarm tipi 2 oluştu.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(12, new XtakipAlarm(12, "Kontak açıldı.", Arrays.asList(AlarmAction.SEND_NOTIFICATION, AlarmAction.SEND_SMS)));
-        alarms.put(13, new XtakipAlarm(13, "Kontak kapatıldı.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(14, new XtakipAlarm(14, "Yurtdışına çıkıldı.", Arrays.asList(AlarmAction.SEND_NOTIFICATION, AlarmAction.SEND_EMAIL)));
-        alarms.put(15, new XtakipAlarm(15, "Yurtiçine girildi.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(16, new XtakipAlarm(16, "Sensör 1 max. sıcaklık aşıldı.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(17, new XtakipAlarm(17, "Sensör 1 min. Sıcaklık aşıldı.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(18, new XtakipAlarm(18, "Giriş3 alarm tipi 1 oluştu.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(19, new XtakipAlarm(19, "Giriş3 alarm tipi 2 oluştu.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(20, new XtakipAlarm(20, "Yakıt seviyesi uyarısı.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(21, new XtakipAlarm(21, "GPS alınamıyor.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(22, new XtakipAlarm(22, "Rölanti süresi aşıldı.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(23, new XtakipAlarm(23, "RequestID uyarısı.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(24, new XtakipAlarm(24, "Taksimetre uyarısı.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(25, new XtakipAlarm(25, "Darbe girişi1 için limit aşıldı.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(26, new XtakipAlarm(26, "Darbe girişi2 için limit aşıldı.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(27, new XtakipAlarm(27, "Darbe girişi3 için limit aşıldı.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(28, new XtakipAlarm(28, "Düşük hız limit alarmı.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(29, new XtakipAlarm(29, "Sensör 2 max. sıcaklık aşıldı.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(30, new XtakipAlarm(30, "Sensör 2 min. Sıcaklık aşıldı.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(31, new XtakipAlarm(31, "Sensör 3 max. sıcaklık aşıldı.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(32, new XtakipAlarm(32, "Sensör 3 min. Sıcaklık aşıldı.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(33, new XtakipAlarm(33, "Açı alarmı.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(34, new XtakipAlarm(34, "Transparan mod alarmı.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(35, new XtakipAlarm(35, "Düşük hız bitti.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(36, new XtakipAlarm(36, "Yüksek hız bitti.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(37, new XtakipAlarm(37, "Rolanti Bitti.", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(38, new XtakipAlarm(38, "Acil Durum.", Arrays.asList(AlarmAction.SEND_NOTIFICATION, AlarmAction.SEND_SMS)));
-        alarms.put(39, new XtakipAlarm(39, "IO Expander Alarm", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(40, new XtakipAlarm(40, "G sensör x yön alarmı", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(41, new XtakipAlarm(41, "G sensör y yön alarmı", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(42, new XtakipAlarm(42, "G sensör z yön alarmı", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(46, new XtakipAlarm(46, "Hassas Durak Alarmı", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(47, new XtakipAlarm(47, "Genel Darbe Giris Alarmı", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(48, new XtakipAlarm(48, "Genel Giris Alarmı", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(49, new XtakipAlarm(49, "Mobileye Alarm", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(50, new XtakipAlarm(50, "M50S Darbe/Kaza/İvme Alarmı", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(55, new XtakipAlarm(55, "G sensor Kasis Alarmı", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(56, new XtakipAlarm(56, "G sensor Savrulma Alarmı", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(57, new XtakipAlarm(57, "G sensor Hizlanma Ivme Alarmı", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(58, new XtakipAlarm(58, "G sensor Yavaş. Ivme Alarmı", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(59, new XtakipAlarm(59, "Düşük batarya", Arrays.asList(AlarmAction.SEND_NOTIFICATION, AlarmAction.SEND_SMS)));
-        alarms.put(60, new XtakipAlarm(60, "Dolu batarya", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(61, new XtakipAlarm(61, "Araç çekilme uyarısı", Arrays.asList(AlarmAction.SEND_NOTIFICATION, AlarmAction.SEND_SMS)));
-        alarms.put(62, new XtakipAlarm(62, "Cihaz kapatıldı", Arrays.asList(AlarmAction.SEND_NOTIFICATION, AlarmAction.SEND_SMS)));
-        alarms.put(63, new XtakipAlarm(63, "Cihaz harekete başladı", Arrays.asList(AlarmAction.SEND_NOTIFICATION, AlarmAction.SEND_SMS)));
-        alarms.put(64, new XtakipAlarm(64, "Cihaz hareketi bitti.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(65, new XtakipAlarm(65, "Geçerli RFID Kart", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(66, new XtakipAlarm(66, "Geçersiz RFID Kart", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(67, new XtakipAlarm(67, "SIM kapağı açıldı", Arrays.asList(AlarmAction.SEND_NOTIFICATION, AlarmAction.SEND_SMS)));
-        alarms.put(68, new XtakipAlarm(68, "Düşük nem oranı", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(69, new XtakipAlarm(69, "Yüksek nem oranı", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(70, new XtakipAlarm(70, "Düşük sıcaklık(Nem sensörü dahili verisi)", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(71, new XtakipAlarm(71, "Yüksek sıcaklık(Nem sensörü dahili verisi)", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(72, new XtakipAlarm(72, "Geçerli iButton ID", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(73, new XtakipAlarm(73, "Geçersiz iButton ID", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(74, new XtakipAlarm(74, "Jamming Alarm", Arrays.asList(AlarmAction.SEND_SMS, AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(75, new XtakipAlarm(75, "Akü bağlantısı takıldı.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
-        alarms.put(76, new XtakipAlarm(76, "Serbest düşüş uyarısı", Arrays.asList(AlarmAction.INFO)));
-        alarms.put(77, new XtakipAlarm(77, "Sistem yeniden başlatıldı.", Arrays.asList(AlarmAction.SEND_NOTIFICATION)));
-
+        return state;
     }
 
     @Override
-    public void replyMessage(Message message, CommandDAO commandDAO, Handler<JsonArray> handler) {
-        commandDAO.getUnread(commands -> {
-            if (null != commands && commands.size() > 0) {
-                LOGGER.info("replying message: {}, replies: {}", message, commands);
-                handler.handle(commands);
+    public GeoJsonResponse responseAsGeoJson(List<? extends LocationMessage> messages) {
+        Objects.requireNonNull(messages, "messages cannot be null");
+        final GeoJsonResponse geoJsonResponse = new GeoJsonResponse();
+
+        LineStringGeometry lineStringGeometry = new LineStringGeometry();
+        PointGeometry marker;
+        Boolean ignKeyOff = null;
+        String startColor = getRgbColor();
+        String endColor = startColor;
+        int startId = 1;
+        int endId = startId;
+        for (LocationMessage message : messages) {
+            LProtocolMessage m = (LProtocolMessage) message;
+
+            if (m.getDeviceState().getOfflineRecord() == Boolean.TRUE) {
+                continue;
             }
-        });
+
+            Boolean currIgnKeyOff = m.getDeviceState().getIgnitiKeyOff();
+            // ignition key status changed
+            if (!Objects.equals(ignKeyOff, currIgnKeyOff)) {
+                // create marker for ignition status change location
+                marker = new PointGeometry();
+                marker.addPoint(createPoint(m));
+
+                // if ignition key on, that means vehicle starting to move
+                if (currIgnKeyOff == Boolean.FALSE) {
+                    // add marker
+                    geoJsonResponse.addFeature(createFeatureForPoint(startId, startColor, marker, false));
+
+                    // configure end color, and end id
+                    endColor = startColor;
+                    endId = startId;
+
+                    // create new color and id for new start
+                    startColor = getRgbColor();
+                    startId++;
+                } else if (currIgnKeyOff == Boolean.TRUE) {
+                    // vehicle stopped use configured endId and end color here
+                    geoJsonResponse.addFeature(createFeatureForPoint(endId, endColor, marker, true));
+                }
+
+                if (lineStringGeometry.getCoordinates().size() > 1) {
+                    // put collected lines as feature with end color and endId
+                    geoJsonResponse.addFeature(createFeature(endId, endColor, lineStringGeometry));
+                    // create new lineString for new start
+                    lineStringGeometry = new LineStringGeometry();
+                }
+
+            }
+
+            lineStringGeometry.addPoint(createPoint(m));
+            ignKeyOff = currIgnKeyOff;
+        }
+
+
+
+        return geoJsonResponse;
     }
+
+    private Feature createFeatureForPoint(int id, String color, PointGeometry geo, boolean ignKeyOff) {
+        List<GeoJsonProperty> properties = new ArrayList<>();
+        properties.add(new GeoJsonProperty("marker-color", color));
+        properties.add(new GeoJsonProperty("marker-size", "small"));
+        properties.add(new GeoJsonProperty("marker-symbol", ignKeyOff ? "parking" : "rocket"));
+        properties.add(new GeoJsonProperty("id", String.valueOf(id)));
+        return new Feature(id, properties, geo);
+    }
+
+    private Feature createFeature(int id, String color, Geometry geometry) {
+        List<GeoJsonProperty> properties = new ArrayList<>();
+        properties.add(new GeoJsonProperty("stroke", color));
+        properties.add(new GeoJsonProperty("id", String.valueOf(id)));
+        return new Feature(id, properties, geometry);
+    }
+
+    @Override
+    public ResponseAdapter getResponseAdapter() {
+        return null;
+    }
+
+
+    private Point createPoint(LProtocolMessage message) {
+        return new Point(message.getLatitude(), message.getLongitude());
+    }
+
+
+    private String getRgbColor() {
+        Random randomGenerator = new Random();
+        int red = randomGenerator.nextInt(256);
+        int green = randomGenerator.nextInt(256);
+        int blue = randomGenerator.nextInt(256);
+        return String.format("#%02x%02x%02x", red, green, blue);
+    }
+
 }
+

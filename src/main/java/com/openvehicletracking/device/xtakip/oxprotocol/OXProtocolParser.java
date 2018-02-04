@@ -1,6 +1,7 @@
 package com.openvehicletracking.device.xtakip.oxprotocol;
 
 
+import com.google.gson.JsonArray;
 import com.openvehicletracking.core.message.Parser;
 
 import java.util.Date;
@@ -28,10 +29,15 @@ public class OXProtocolParser implements Parser {
         message = message.replace("!", "").replace("@", "");
 
         String[] splittedMsg = message.split(";");
+        JsonArray extraParameters = new JsonArray();
+        extraParameters.add(splittedMsg[2]);
+        extraParameters.add(splittedMsg[3]);
+        extraParameters.add(splittedMsg[4]);
+
 
         m.setDeviceId(splittedMsg[1]);
         m.setRequestId(splittedMsg[5]);
-        m.setParams(new String[]{splittedMsg[2], splittedMsg[3], splittedMsg[4]});
+        m.setExtraParameters(extraParameters);
         m.setDatetime(new Date().getTime());
 
         return m;

@@ -1,12 +1,13 @@
 package com.openvehicletracking.device.xtakip.lprotocol;
 
 
+import com.google.gson.JsonArray;
+import com.openvehicletracking.core.GpsStatus;
+import com.openvehicletracking.core.GsonFactory;
+import com.openvehicletracking.core.message.LocationMessage;
 import com.openvehicletracking.device.xtakip.DeviceConstants;
 import com.openvehicletracking.device.xtakip.XTakip;
 import com.openvehicletracking.device.xtakip.XTakipStatus;
-import com.openvehicletracking.core.GpsStatus;
-import com.openvehicletracking.core.message.LocationMessage;
-import io.vertx.core.json.JsonArray;
 
 import java.util.Optional;
 
@@ -28,7 +29,7 @@ public class LProtocolMessage implements LocationMessage {
     private String deviceId;
 
     // device
-    private int alarm;
+    private int alert;
     private XTakipStatus deviceState;
     private double distance;
     private String additional;
@@ -38,6 +39,11 @@ public class LProtocolMessage implements LocationMessage {
     private final String device = XTakip.NAME;
     private final String type = DeviceConstants.MESSAGE_TYPE_L;
 
+
+    @Override
+    public String asJsonString() {
+        return GsonFactory.getGson().toJson(this);
+    }
     @Override
     public double getLatitude() {
         return latitude;
@@ -98,8 +104,8 @@ public class LProtocolMessage implements LocationMessage {
         return Optional.empty();
     }
 
-    public int getAlarm() {
-        return alarm;
+    public int getAlert() {
+        return alert;
     }
 
     public XTakipStatus getDeviceState() {
@@ -119,7 +125,6 @@ public class LProtocolMessage implements LocationMessage {
     }
 
     // setters
-
 
     public void setLatitude(double latitude) {
         this.latitude = latitude;
@@ -149,8 +154,8 @@ public class LProtocolMessage implements LocationMessage {
         this.deviceId = deviceId;
     }
 
-    public void setAlarm(int alarm) {
-        this.alarm = alarm;
+    public void setAlert(int alert) {
+        this.alert = alert;
     }
 
     public void setDeviceState(XTakipStatus deviceState) {
@@ -167,6 +172,11 @@ public class LProtocolMessage implements LocationMessage {
 
     public void setRawMessage(String rawMessage) {
         this.rawMessage = rawMessage;
+    }
+
+    @Override
+    public boolean isReplyRequired() {
+        return true;
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.openvehicletracking.device.xtakip.XTakipStatus;
 import com.openvehicletracking.core.GpsStatus;
 import com.openvehicletracking.core.message.Parser;
 
+import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -87,7 +88,7 @@ public class LProtocolParser implements Parser {
         p.setDeviceState(status);
         p.setSpeed(speed);
         p.setDistance(distance);
-        p.setAlarm(alarm);
+        p.setAlert(alarm);
         p.setDirection(direction);
         p.setAdditional(additional);
         try {
@@ -99,11 +100,10 @@ public class LProtocolParser implements Parser {
         return p;
     }
 
-    private XTakipStatus parseState(String raw) {
+    public XTakipStatus parseState(String raw) {
         XTakipStatus status = new XTakipStatus();
         status.setRaw(raw);
-        int convertedStatus = Integer.parseInt(raw);
-        String bits = Integer.toString(convertedStatus, 2);
+        String bits = new BigInteger(raw, 16).toString(2);
         bits = new StringBuilder(bits).reverse().toString();
         byte[] bytes = bits.getBytes();
         byte t = 49; // 1
