@@ -56,21 +56,21 @@ uploadArchives {
             }
 
             pom.project {
-                name 'OpenVehicleTracking Xtakip Device Implementation'
+                name 'OpenVehicleTracking tracking device protocols'
                 packaging 'jar'
-                description 'xtakip tracking device message parsers and device implementations'
+                description 'tracking device message parsers and device implementations'
                 url 'http://openvehicletracking.com'
 
                 scm {
-                    connection 'scm:git:https://github.com/openvehicletracking/device-xtakip-impl.git'
-                    developerConnection 'scm:git:https://github.com/openvehicletracking/device-xtakip-impl.git'
-                    url 'https://github.com/openvehicletracking/device-xtakip-impl'
+                    connection 'scm:git:https://github.com/openvehicletracking/protocols.git'
+                    developerConnection 'scm:git:https://github.com/openvehicletracking/protocols.git'
+                    url 'https://github.com/openvehicletracking/protocols'
                 }
 
                 licenses {
                     license {
                         name 'MIT'
-                        url 'https://github.com/openvehicletracking/device-xtakip-impl/blob/master/LICENSE'
+                        url 'https://github.com/openvehicletracking/protocols/blob/master/LICENSE'
                     }
                 }
 
