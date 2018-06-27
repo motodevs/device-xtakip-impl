@@ -1,11 +1,14 @@
 package com.openvehicletracking.protocols.gt100.alert;
 
 import com.openvehicletracking.core.*;
+import com.openvehicletracking.core.exception.StateCreateNotSupportException;
 import com.openvehicletracking.core.json.GsonFactory;
+import com.openvehicletracking.core.protocol.Message;
 import com.openvehicletracking.core.protocol.MessagingProtocol;
 import com.openvehicletracking.protocols.BaseLocationMessage;
 import com.openvehicletracking.protocols.gt100.Gt100Protocol;
 
+import javax.annotation.Nullable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Optional;
@@ -31,9 +34,10 @@ public class AlertMessage extends BaseLocationMessage {
         return raw;
     }
 
+    @Nullable
     @Override
     public Device getDevice() {
-        return device;
+        return null;
     }
 
     @Override

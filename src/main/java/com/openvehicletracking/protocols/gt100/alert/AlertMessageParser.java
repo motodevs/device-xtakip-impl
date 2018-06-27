@@ -72,8 +72,7 @@ public class AlertMessageParser extends GT100BaseMessageParser {
         terminalInfo.forEach(builder::attribute);
 
         AlertMessage message = builder.build();
-        GT100Device device = new GT100Device(null);
-        device.createStateFromMessage(message);
+
 
         LOGGER.debug("Message parsed : {}", message.asJson());
         return message;

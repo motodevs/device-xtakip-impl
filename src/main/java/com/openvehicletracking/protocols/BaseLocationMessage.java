@@ -1,12 +1,13 @@
 package com.openvehicletracking.protocols;
 
-import com.openvehicletracking.core.AbstractLocationMessageBuilder;
-import com.openvehicletracking.core.Device;
-import com.openvehicletracking.core.GpsStatus;
-import com.openvehicletracking.core.Position;
+import com.openvehicletracking.core.*;
+import com.openvehicletracking.core.exception.StateCreateNotSupportException;
 import com.openvehicletracking.core.protocol.LocationMessage;
+import com.openvehicletracking.core.protocol.Message;
 
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Optional;
 
 abstract public class BaseLocationMessage implements LocationMessage {
 
@@ -15,7 +16,6 @@ abstract public class BaseLocationMessage implements LocationMessage {
     protected final HashMap<String, Object> attributes;
     protected final GpsStatus gpsStatus;
     protected final Object raw;
-    protected Device device;
 
     public BaseLocationMessage(AbstractLocationMessageBuilder<?> builder) {
         this.position = builder.getPosition();
@@ -25,7 +25,29 @@ abstract public class BaseLocationMessage implements LocationMessage {
         this.raw = builder.getRaw();
     }
 
-    public void setDevice(Device device) {
-        this.device = device;
+    @Override
+    public DeviceState createState() throws StateCreateNotSupportException {
+        Optional<HashMap<String, Object>> attrs = this.getAttributes();
+        if (!attrs.isPresent()) {
+            return null;
+        }
+
+        DeviceState state = new DeviceState();
+        HashMap<String, Object> attributes = attrs.get();
+
+        Object ignKeyOn = attributes.get(Message.ATTR_IGN_KEY_ON);
+
+        state.setCreatedAt(new Date().getTime());
+        state.setUpdatedAt(new Date().getTime());
+        state.setDeviceDate(getDate().getTime());
+        state.setDeviceStatus(DeviceStatus.ONLINE);
+        if (ignKeyOn != null) {
+            state.setVehicleStatus((boolean)ignKeyOn ? VehicleStatus.MOVING : VehicleStatus.PARKED);
+        }
+        state.setGpsStatus(getStatus());
+        state.setPosition(getPosition());
+        attributes.forEach(state::addAttribute);
+
+        return state;
     }
 }

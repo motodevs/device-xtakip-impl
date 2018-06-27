@@ -2,7 +2,9 @@ package com.openvehicletracking.protocols;
 
 import com.openvehicletracking.core.ConnectionHolder;
 import com.openvehicletracking.core.Device;
+import com.openvehicletracking.core.DeviceState;
 import com.openvehicletracking.core.Reply;
+import com.openvehicletracking.core.exception.StateCreateNotSupportException;
 import com.openvehicletracking.core.json.GsonFactory;
 import com.openvehicletracking.core.protocol.Command;
 import com.openvehicletracking.protocols.xtakip.XTakip;
@@ -78,5 +80,11 @@ abstract public class BaseCommandMessage implements Command {
     @Override
     public String asJson() {
         return GsonFactory.getGson().toJson(this);
+    }
+
+
+    @Override
+    public DeviceState createState() throws StateCreateNotSupportException {
+        throw new StateCreateNotSupportException();
     }
 }

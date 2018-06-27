@@ -14,6 +14,7 @@ public class Gt100Protocol implements MessagingProtocol {
     private final ArrayList<MessageHandler> handlers = new ArrayList<>();
     public static final String NAME = "GT100";
     public static int responseIndex;
+
     public Gt100Protocol() {
         handlers.add(new LoginMessageHandler());
         handlers.add(new LocationMessageHandler());
