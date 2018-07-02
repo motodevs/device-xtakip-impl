@@ -16,7 +16,7 @@ public class HXProtocolMessageHandler extends XTakipBaseMessageHandler {
     @Override
     protected Message handle(String msg, ConnectionHolder<?> connectionHolder) {
         Message message = new HXProtocolParser(msg).parse();
-        if (message != null) {
+        if (message != null && message.getDevice() != null) {
             message.getDevice().addConnection(connectionHolder);
             return message;
         }

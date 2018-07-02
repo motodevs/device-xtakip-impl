@@ -12,7 +12,9 @@ public class AlertMessageHandler extends GT100BaseMessageHandler {
     protected Message handle(ByteBuffer msg, ConnectionHolder<?> connectionHolder) {
         AlertMessageParser parser = new AlertMessageParser(msg);
         AlertMessage message = (AlertMessage) parser.parse();
-        message.getDevice().addConnection(connectionHolder);
+        if (message.getDevice() != null) {
+            message.getDevice().addConnection(connectionHolder);
+        }
         return message;
     }
 

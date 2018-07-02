@@ -13,7 +13,9 @@ public class LocationMessageHandler extends GT100BaseMessageHandler {
     protected Message handle(ByteBuffer msg, ConnectionHolder<?> connectionHolder) {
         LocationMessageParser parser = new LocationMessageParser(msg);
         GT100LocationMessage message = (GT100LocationMessage) parser.parse();
-        message.getDevice().addConnection(connectionHolder);
+        if (message.getDevice() != null) {
+            message.getDevice().addConnection(connectionHolder);
+        }
         return message;
     }
 
